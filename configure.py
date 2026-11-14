@@ -448,7 +448,7 @@ config.libs = [
             Object(NonMatching, "SB/Core/x/xHud.cpp", extra_cflags=["-sym on"]),
             Object(NonMatching, "SB/Core/x/xHudFontMeter.cpp"),
             Object(NonMatching, "SB/Core/x/xHudMeter.cpp"),
-            Object(Equivalent, "SB/Core/x/xHudModel.cpp", extra_cflags=["-sym on"]),
+            Object(Matching, "SB/Core/x/xHudModel.cpp", extra_cflags=["-sym on"]),
             Object(NonMatching, "SB/Core/x/xHudUnitMeter.cpp", extra_cflags=["-sym on   "]),
             Object(Matching, "SB/Core/x/xIni.cpp"),
             Object(NonMatching, "SB/Core/x/xMath.cpp"),

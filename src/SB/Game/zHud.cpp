@@ -7,6 +7,7 @@
 #include "zScene.h"
 
 #include "xHud.h"
+#include "xHudAsset.h"
 #include "xHudFontMeter.h"
 #include "xHudModel.h"
 #include "xHudText.h"
