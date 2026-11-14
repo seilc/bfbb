@@ -5,7 +5,7 @@
 #include <types.h>
 
 #ifdef __MWERKS__
-#define iabs(x) (float)(__fabs((float)x))
+#define iabs(x) (float)(__fabs((float)(x)))
 #else
 #define iabs(x) fabsf(x)
 #endif

@@ -318,7 +318,6 @@ cflags_bfbb = [
     "-char unsigned",
     "-str reuse,pool,readonly",
     "-use_lmw_stmw on",
-    '-pragma "cpp_extensions on"',
     "-inline off",
     "-gccinc",
     "-i include/inline",

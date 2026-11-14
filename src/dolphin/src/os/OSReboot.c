@@ -12,7 +12,7 @@ typedef struct _ApploaderHeader {
     u32 reserved2;  // _1C
 } ApploaderHeader;
 
-static ApploaderHeader Header ALIGN(32);
+static ApploaderHeader Header ATTRIBUTE_ALIGN(32);
 
 extern void* __OSSavedRegionStart;
 extern void* __OSSavedRegionEnd;

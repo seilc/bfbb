@@ -21,7 +21,7 @@ typedef struct SramControlBlock
     void (*callback)(void);
 } SramControlBlock;
 
-static SramControlBlock Scb ALIGN(32);
+static SramControlBlock Scb ATTRIBUTE_ALIGN(32);
 
 inline BOOL ReadSram(void* buffer)
 {

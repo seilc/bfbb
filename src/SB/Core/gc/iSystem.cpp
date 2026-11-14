@@ -464,7 +464,6 @@ S32 DolphinInitMemorySystem(RwMemoryFunctions* memoryFuncs)
 
 static S32 dlAccessToMode(const char* mode)
 {
-    char c;
     S32 ret = 0;
 
     if (mode == 0)
@@ -472,29 +471,27 @@ static S32 dlAccessToMode(const char* mode)
         return 0;
     }
 
-    c = mode[0];
-
-    if (c == 'r' && (mode[1] == '\0' || (mode[1] == 'b' && mode[2] == '\0')))
+    if (mode[0] == 'r' && (mode[1] == '\0' || (mode[1] == 'b' && mode[2] == '\0')))
     {
         ret = 1;
     }
-    else if (c == 'w' && (mode[1] == '\0' || (mode[1] == 'b' && mode[2] == '\0')))
+    else if (mode[0] == 'w' && (mode[1] == '\0' || (mode[1] == 'b' && mode[2] == '\0')))
     {
         ret = 0xe;
     }
-    else if (c == 'a' && (mode[1] == '\0' || (mode[1] == 'b' && mode[2] == '\0')))
+    else if (mode[0] == 'a' && (mode[1] == '\0' || (mode[1] == 'b' && mode[2] == '\0')))
     {
         ret = 6;
     }
-    else if (c == 'r' && mode[1] == '+' && (mode[2] == '\0' || (mode[2] == 'b' && mode[3] == '\0')))
+    else if (mode[0] == 'r' && mode[1] == '+' && (mode[2] == '\0' || (mode[2] == 'b' && mode[3] == '\0')))
     {
         ret = 3;
     }
-    else if (c == 'w' && mode[1] == '+' && (mode[2] == '\0' || (mode[2] == 'b' && mode[3] == '\0')))
+    else if (mode[0] == 'w' && mode[1] == '+' && (mode[2] == '\0' || (mode[2] == 'b' && mode[3] == '\0')))
     {
         ret = 0xf;
     }
-    else if (c == 'a' && mode[1] == '+' && (mode[2] == '\0' || (mode[2] == 'b' && mode[3] == '\0')))
+    else if (mode[0] == 'a' && mode[1] == '+' && (mode[2] == '\0' || (mode[2] == 'b' && mode[3] == '\0')))
     {
         ret = 7;
     }

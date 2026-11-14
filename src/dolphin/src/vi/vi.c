@@ -341,12 +341,16 @@ void __VIInit(VITVMode mode)
     }
 }
 
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+#define CLAMP(val, min, max) ((val) > (max) ? (max) : (val) < (min) ? (min) : (val))
+
 inline void AdjustPosition(u16 acv)
 {
     s32 coeff, frac;
 
     HorVer.adjDispPosX =
-        (u16)CLAMP(0, 720 - HorVer.dispSizeX, (s16)HorVer.dispPosX + displayOffsetH);
+        (u16)CLAMP((s16)HorVer.dispPosX + displayOffsetH, 0, 720 - HorVer.dispSizeX);
 
     coeff = (HorVer.xfbMode == VI_XFBMODE_SF) ? 2 : 1;
     frac = HorVer.dispPosY & 1;

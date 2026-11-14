@@ -10,8 +10,8 @@ const char* __DVDVersion = "<< Dolphin SDK - DVD\trelease build: Apr 22 2003 15:
 typedef void (*stateFunc)(DVDCommandBlock* block);
 stateFunc LastState;
 
-static DVDBB2 BB2 ALIGN(32);
-static DVDDiskID CurrDiskID ALIGN(32);
+static DVDBB2 BB2 ATTRIBUTE_ALIGN(32);
+static DVDDiskID CurrDiskID ATTRIBUTE_ALIGN(32);
 static DVDCommandBlock* executing;
 static DVDDiskID* IDShouldBe;
 static OSBootInfo* bootInfo;

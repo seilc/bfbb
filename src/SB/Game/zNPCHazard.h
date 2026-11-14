@@ -86,12 +86,9 @@ struct HAZCollide : HAZTypical
     xVec3 pos_collide;
     xVec3 dir_normal;
     xParabola parabinfo;
-    struct
-    {
-        S32 flg_collide : 8;
-        S32 flg_result : 8;
-        S32 flg_unused : 16;
-    };
+    S32 flg_collide : 8;
+    S32 flg_result : 8;
+    S32 flg_unused : 16;
     S32 cnt_skipcol;
     en_hazcol idx_rotateCol;
 };

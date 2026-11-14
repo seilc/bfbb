@@ -855,7 +855,7 @@ void _xAnimTableAddTransition(xAnimTable* table, xAnimTransition* tran, const ch
     //     class xAnimTransition * duplicatedTransition; // r17
     //     class xAnimTransitionList * curr; // r7
 
-    U8* buffer = (U8*)giAnimScratch;
+    U8* buffer = giAnimScratch;
     xAnimState** stateList = (xAnimState**)(giAnimScratch + 0x400);
     S32 i;
     U32 stateCount = 0;
@@ -1084,7 +1084,7 @@ xAnimTransition* xAnimTableNewTransition(xAnimTable* table, const char* source, 
 
 void xAnimTableAddFile(xAnimTable* table, xAnimFile* file, const char* states)
 {
-    U8* buffer = (U8*)giAnimScratch;
+    U8* buffer = giAnimScratch;
     char* stateName = xStrTokBuffer(states, " ,\t\n\r", buffer);
     while (stateName != NULL)
     {

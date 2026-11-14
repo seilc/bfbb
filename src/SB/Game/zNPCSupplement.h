@@ -104,11 +104,8 @@ struct NPARData
     F32 tym_exist;
     F32 fac_abuse;
     xVec3 vel;
-    struct
-    {
-        S32 flg_popts : 24;
-        S32 nparmode : 8;
-    };
+    S32 flg_popts : 24;
+    S32 nparmode : 8;
     F32 unused[3];
 };
 
