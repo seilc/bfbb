@@ -27,6 +27,10 @@ static inline void GXSetTexCoordGen(GXTexCoordID dst_coord, GXTexGenType func,
     GXSetTexCoordGen2(dst_coord, func, src_param, mtx, GX_FALSE, GX_PTIDENTITY);
 }
 
+static inline void GXEnd(void)
+{
+}
+
 #ifdef __cplusplus
 }
 #endif
