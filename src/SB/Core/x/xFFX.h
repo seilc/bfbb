@@ -6,23 +6,14 @@
 struct xScene;
 struct xEnt;
 
+typedef void(*xFFXEffectCallback)(xEnt*, xScene*, F32, void*);
+
 struct xFFX
 {
     U32 flags;
-    void (*doEffect)(xEnt*, xScene*, F32, void*);
+    xFFXEffectCallback doEffect;
     void* fdata;
     xFFX* next;
-};
-
-struct xFFXShakeState
-{
-    xVec3 disp;
-    F32 dur;
-    F32 freq;
-    F32 tmr;
-    F32 alpha;
-    F32 lval;
-    xFFXShakeState* next;
 };
 
 struct xFFXRotMatchState
@@ -40,13 +31,24 @@ struct xFFXRotMatchState
     xFFXRotMatchState* next;
 };
 
+struct xFFXShakeState
+{
+    xVec3 disp;
+    F32 dur;
+    F32 freq;
+    F32 tmr;
+    F32 alpha;
+    F32 lval;
+    xFFXShakeState* next;
+};
+
 void xFFXPoolInit(U32 num_ffx);
 xFFX* xFFXAlloc();
-void xFFXFree(xFFX* ffx);
+void xFFXFree(xFFX* f);
 void xFFXTurnOn(xFFX* f);
 void xFFXTurnOff(xFFX* f);
 S16 xFFXAddEffect(xEnt* ent, xFFX* f);
-S16 xFFXAddEffect(xEnt* ent, void (*dof)(xEnt*, xScene*, F32, void*), void* fd);
+S16 xFFXAddEffect(xEnt* ent, xFFXEffectCallback dof, void* fd);
 U32 xFFXRemoveEffectByFData(xEnt* ent, void* fdata);
 void xFFXApply(xEnt* ent, xScene* sc, F32 dt);
 void xFFXShakeUpdateEnt(xEnt* ent, xScene* sc, F32 dt, void* fdata);

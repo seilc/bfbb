@@ -3,186 +3,154 @@
 
 #include "xEnt.h"
 #include "xMathInlines.h"
-#include "xMemMgr.h"
-
-#include <types.h>
 
 static U32 psize;
 static xFFX* pool;
 static xFFX* alist;
-static U32 shake_psize;
-static xFFXShakeState* shake_pool;
-static xFFXShakeState* shake_alist;
-static U32 rot_match_psize;
-static xFFXRotMatchState* rot_match_pool;
-static xFFXRotMatchState* rot_match_alist;
 
 void xFFXPoolInit(U32 num_ffx)
 {
     psize = num_ffx;
-    pool = (xFFX*)xMemAlloc(gActiveHeap, num_ffx * sizeof(xFFX), 0);
-    pool[0].next = NULL;
-    for (U32 i = 1; i < psize; i++)
-    {
-        pool[i].next = &pool[i - 1];
+    pool = (xFFX*)xMEMALLOC(sizeof(xFFX) * psize, 0);
+
+    pool->next = NULL;
+    for (U32 i = 1; i < psize; i++) {
+        pool[i].next = &pool[i-1];
     }
-    alist = &pool[psize - 1];
+
+    alist = pool + (psize-1);
 }
 
 xFFX* xFFXAlloc()
 {
-    xFFX* alist2;
-    alist2 = alist;
-    if (alist == NULL)
-    {
+    if (!alist) {
         return NULL;
     }
+
+    xFFX* f = alist;
     alist = alist->next;
-    return alist2;
+    return f;
 }
 
-void xFFXFree(xFFX* ffx)
+void xFFXFree(xFFX* f)
 {
-    ffx->next = alist;
-    alist = ffx;
+    f->next = alist;
+    alist = f;
 }
 
 void xFFXTurnOn(xFFX* f)
 {
-    f->flags |= 1;
+    f->flags |= 0x1;
 }
 
 void xFFXTurnOff(xFFX* f)
 {
-    f->flags &= 0xfffffffe;
+    f->flags &= ~0x1;
 }
 
 S16 xFFXAddEffect(xEnt* ent, xFFX* f)
 {
-    U8 numFFX;
-    f->next = (xFFX*)ent->ffx;
-    f->flags = f->flags | 1;
-    *(xFFX**)&ent->ffx = f;
-    numFFX = ent->num_ffx;
-    ent->num_ffx = numFFX + 1;
-    return numFFX;
+    f->next = ent->ffx;
+    f->flags |= 0x1;
+
+    ent->ffx = f;
+
+    return ent->num_ffx++;
 }
 
-S16 xFFXAddEffect(xEnt* ent, void (*dof)(xEnt*, xScene*, F32, void*), void* fd)
+S16 xFFXAddEffect(xEnt* ent, xFFXEffectCallback dof, void* fd)
 {
-    xFFX* f = (xFFX*)xFFXAlloc();
-    S16 effectID;
-    if (f == NULL)
-    {
-        effectID = -1;
+    xFFX* f = xFFXAlloc();
+    if (!f) {
+        return -1;
     }
-    else
-    {
-        f->doEffect = dof;
-        f->fdata = fd;
-        effectID = xFFXAddEffect(ent, f);
-    }
-    return effectID;
+
+    f->doEffect = dof;
+    f->fdata = fd;
+    return xFFXAddEffect(ent, f);
 }
 
 U32 xFFXRemoveEffectByFData(xEnt* ent, void* fdata)
 {
     xFFX** ffxh = &ent->ffx;
-
-    while (*ffxh != NULL)
-    {
-        xFFX* next = *ffxh;
-        if (fdata == next->fdata)
-        {
-            next = next->next;
+    while (*ffxh) {
+        if (fdata == (*ffxh)->fdata) {
+            xFFX* next = (*ffxh)->next;
             ent->num_ffx--;
             xFFXFree(*ffxh);
             *ffxh = next;
-
-            return 1;
+            return TRUE;
         }
-
         ffxh = &(*ffxh)->next;
     }
 
-    return 0;
+    return FALSE;
 }
 
 static void xFFXApplyOne(xFFX* ffx, xEnt* ent, xScene* sc, F32 dt)
 {
-    if (ffx->next != NULL)
-    {
+    if (ffx->next) {
         xFFXApplyOne(ffx->next, ent, sc, dt);
     }
-    if ((ffx->flags & 1) != 0)
-    {
+    if (ffx->flags & 0x1) {
         ffx->doEffect(ent, sc, dt, ffx->fdata);
     }
 }
 
 void xFFXApply(xEnt* ent, xScene* sc, F32 dt)
 {
-    if ((xFFX*)ent->ffx != NULL)
-    {
-        xFFXApplyOne((xFFX*)ent->ffx, ent, sc, dt);
+    if (ent->ffx) {
+        xFFXApplyOne(ent->ffx, ent, sc, dt);
     }
 }
 
-// regswap
 void xFFXShakeUpdateEnt(xEnt* ent, xScene* sc, F32 dt, void* fdata)
 {
     xFFXShakeState* ss = (xFFXShakeState*)fdata;
     F32 tnext = ss->tmr + dt;
-    F32 mag = xexp(ss->alpha * tnext);
+    xVec3 dpos;
+    F32 mag = isin(ss->freq * tnext) * xexp(ss->alpha * tnext);
 
-    mag *= isin(ss->freq * tnext);
-
-    if (ss->tmr == 0.0f)
-    {
+    if (ss->tmr == 0.0f) {
         ss->lval = 0.0f;
-    }
-    else
-    {
-        if (ss->tmr >= ss->dur)
-        {
-            if (ss->lval * mag < 0.0f)
-            {
-                xFFXRemoveEffectByFData(ent, fdata);
-                xFFXShakeFree(ss);
-                return;
-            }
-        }
+    } else if (ss->tmr >= ss->dur && ss->lval * mag < 0.0f) {
+        xFFXRemoveEffectByFData(ent, fdata);
+        xFFXShakeFree(ss);
+        return;
     }
 
-    xVec3 dv;
-    xVec3SMul(&dv, (xVec3*)fdata, mag - ss->lval);
-    xVec3AddTo((xVec3*)(&ent->frame->mat.pos), &dv);
+    xVec3SMul(&dpos, &ss->disp, mag - ss->lval);
+    xVec3AddTo(&ent->frame->mat.pos, &dpos);
     ss->lval = mag;
     ss->tmr = tnext;
 }
 
+static U32 shake_psize;
+static xFFXShakeState* shake_pool;
+static xFFXShakeState* shake_alist;
+
 void xFFXShakePoolInit(U32 num)
 {
     shake_psize = num;
-    shake_pool = (xFFXShakeState*)xMemAlloc(gActiveHeap, num * sizeof(xFFXShakeState), 0);
-    shake_pool->next = NULL;
-    for (S32 i = 1; i < shake_psize; i++)
-    {
-        shake_pool[i].next = &shake_pool[i - 1];
+    shake_pool = (xFFXShakeState*)xMEMALLOC(sizeof(xFFXShakeState) * shake_psize, 0);
+
+    shake_pool[0].next = NULL;
+    for (U32 i = 1; i < shake_psize; i++) {
+        shake_pool[i].next = &shake_pool[i-1];
     }
-    shake_alist = &shake_pool[shake_psize - 1];
+
+    shake_alist = shake_pool + (shake_psize-1);
 }
 
 xFFXShakeState* xFFXShakeAlloc()
 {
-    xFFXShakeState* alist2;
-    alist2 = shake_alist;
-    if (shake_alist == NULL)
-    {
+    if (!shake_alist) {
         return NULL;
     }
+
+    xFFXShakeState* s = shake_alist;
     shake_alist = shake_alist->next;
-    return alist2;
+    return s;
 }
 
 void xFFXShakeFree(xFFXShakeState* s)
@@ -191,29 +159,30 @@ void xFFXShakeFree(xFFXShakeState* s)
     shake_alist = s;
 }
 
+static U32 rot_match_psize;
+static xFFXRotMatchState* rot_match_pool;
+static xFFXRotMatchState* rot_match_alist;
+
 void xFFXRotMatchPoolInit(U32 num)
 {
     rot_match_psize = num;
-
-    rot_match_pool = (xFFXRotMatchState*)xMemAlloc(gActiveHeap, num * sizeof(xFFXRotMatchState), 0);
+    rot_match_pool = (xFFXRotMatchState*)xMEMALLOC(sizeof(xFFXRotMatchState) * rot_match_psize, 0);
 
     rot_match_pool->next = NULL;
-    for (U32 i = 1; i < rot_match_psize; ++i)
-    {
-        rot_match_pool[i].next = &rot_match_pool[i - 1];
+    for (U32 i = 1; i < rot_match_psize; i++) {
+        rot_match_pool[i].next = &rot_match_pool[i-1];
     }
 
-    rot_match_alist = &rot_match_pool[rot_match_psize - 1];
+    rot_match_alist = rot_match_pool + (rot_match_psize-1);
 }
 
 xFFXRotMatchState* xFFXRotMatchAlloc()
 {
-    xFFXRotMatchState* alist2;
-    alist2 = rot_match_alist;
-    if (rot_match_alist == NULL)
-    {
+    if (!rot_match_alist) {
         return NULL;
     }
+
+    xFFXRotMatchState* s = rot_match_alist;
     rot_match_alist = rot_match_alist->next;
-    return alist2;
+    return s;
 }
