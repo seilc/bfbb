@@ -149,6 +149,7 @@ class ProjectConfig:
         self.dtk_path: Optional[Path] = None  # If None, download
         self.compilers_tag: Optional[str] = None  # 1
         self.compilers_path: Optional[Path] = None  # If None, download
+        self.mweppc_tag: Optional[str] = None  # seilc/mweppc release tag (GC/2.0p3)
         self.wibo_tag: Optional[str] = None  # Git tag
         self.wrapper: Optional[Path] = None  # If None, download wibo on Linux
         self.sjiswrap_tag: Optional[str] = None  # Git tag
@@ -570,6 +571,21 @@ def generate_build_ninja(
             },
         )
 
+    # GC/2.0p3 isn't in the compilers zip: it comes from a seilc/mweppc release
+    mweppc_implicit: Optional[Path] = None
+    if config.compilers_path is None and config.mweppc_tag is not None:
+        mweppc_implicit = compilers / "GC" / "2.0p3"
+        n.build(
+            outputs=mweppc_implicit,
+            rule="download_tool",
+            implicit=download_tool,
+            order_only=compilers_implicit,
+            variables={
+                "tool": "mweppc",
+                "tag": config.mweppc_tag,
+            },
+        )
+
     binutils_implicit = None
     if config.binutils_path:
         binutils = config.binutils_path
@@ -597,7 +613,7 @@ def generate_build_ninja(
     n.build(
         outputs="tools",
         rule="phony",
-        inputs=[dtk, sjiswrap, wrapper, compilers, binutils, objdiff],
+        inputs=[dtk, sjiswrap, wrapper, compilers, mweppc_implicit, binutils, objdiff],
     )
     n.newline()
 
@@ -620,7 +636,7 @@ def generate_build_ninja(
     # MWCC
     mwcc = compiler_path / "mwcceppc.exe"
     mwcc_cmd = f"{wrapper_cmd}{mwcc} $cflags -MMD -c $in -o $basedir"
-    mwcc_implicit: List[Optional[Path]] = [compilers_implicit or mwcc, wrapper_implicit]
+    mwcc_implicit: List[Optional[Path]] = [compilers_implicit or mwcc, mweppc_implicit, wrapper_implicit]
 
     # MWCC with UTF-8 to Shift JIS wrapper
     mwcc_sjis_cmd = f"{wrapper_cmd}{sjiswrap} {mwcc} $cflags -MMD -c $in -o $basedir"
@@ -1403,6 +1419,7 @@ def generate_objdiff_config(
         "GC/1.3.2r": "mwcc_242_81r",
         "GC/2.0": "mwcc_247_92",
         "GC/2.0p1": "mwcc_247_92p1",
+        "GC/2.0p3": "mwcc_247_92p1",  # not on decomp.me: closest
         "GC/2.5": "mwcc_247_105",
         "GC/2.6": "mwcc_247_107",
         "GC/2.7": "mwcc_247_108",

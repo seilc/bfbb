@@ -92,9 +92,15 @@ def ok_url(tag: str) -> str:
     return f"{repo}/releases/download/{tag}/OK-linux-x86_64"
 
 
+def mweppc_url(tag: str) -> str:
+    repo = "https://github.com/seilc/mweppc"
+    return f"{repo}/releases/download/{tag}/mweppc-2.0p3.zip"
+
+
 TOOLS: Dict[str, Callable[[str], str]] = {
     "binutils": binutils_url,
     "compilers": compilers_url,
+    "mweppc": mweppc_url,
     "dtk": dtk_url,
     "objdiff-cli": objdiff_cli_url,
     "sjiswrap": sjiswrap_url,

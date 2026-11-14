@@ -158,6 +158,7 @@ if not config.non_matching:
 # Tool versions
 config.binutils_tag = "2.42-1"
 config.compilers_tag = "20250812"
+config.mweppc_tag = "bfbb-2.0p3-1"
 config.dtk_tag = "v1.7.0"
 config.objdiff_tag = "v3.7.1"
 config.sjiswrap_tag = "v1.2.2"
@@ -404,7 +405,7 @@ config.warn_missing_source = False
 config.libs = [
     {
         "lib": "SB",
-        "mw_version": config.linker_version,
+        "mw_version": "GC/2.0p3",
         "cflags": cflags_bfbb,
         "progress_category": "game",
         "objects": [
