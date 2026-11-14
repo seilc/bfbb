@@ -7,6 +7,7 @@
 
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
+#define EPSILON 1e-5f
 #define xabs(x) iabs(x)
 
 #define xeq(a, b, e) (xabs((a) - (b)) <= (e))
@@ -16,6 +17,7 @@
 #define xlerp(a, b, t) ((a) + (t) * ((b) - (a)))
 
 #define SQR(x) ((x) * (x))
+#define xsqr(x) ((x) * (x))
 
 #define ALIGN(x, a) ((x) + ((a) - 1) & ~((a) - 1))
 

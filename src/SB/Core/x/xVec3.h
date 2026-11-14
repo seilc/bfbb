@@ -10,11 +10,27 @@ struct xVec3
     F32 z;
 
     static const xVec3 m_Null;
+    static const xVec3 m_Ones;
+    static const xVec3 m_NegOnes;
     static const xVec3 m_UnitAxisX;
     static const xVec3 m_UnitAxisY;
+    static const xVec3 m_UnitAxisZ;
+    static const xVec3 m_HalfVec;
+    static const xVec3 m_NegHalfVec;
+    static const xVec3 m_DoubleVec;
+    static const xVec3 m_NegDoubleVec;
 
-    static xVec3 create(F32 x, F32 y, F32 z);
-    static xVec3 create(F32 f);
+    static xVec3 create(F32 x, F32 y, F32 z)
+    {
+        xVec3 v = { x, y, z };
+        return v;
+    }
+
+    static xVec3 create(F32 f)
+    {
+        xVec3 v = { f, f, f };
+        return v;
+    }
 
     xVec3& operator=(F32 f)
     {
@@ -88,7 +104,7 @@ struct xVec3
 
 F32 xVec3Normalize(xVec3* o, const xVec3* v);
 F32 xVec3NormalizeFast(xVec3* o, const xVec3* v);
-void xVec3Copy(xVec3* dst, const xVec3* src);
-F32 xVec3Dot(const xVec3* a, const xVec3* b);
+void xVec3Copy(xVec3* o, const xVec3* v);
+F32 xVec3Dot(const xVec3* vec1, const xVec3* vec2);
 
 #endif

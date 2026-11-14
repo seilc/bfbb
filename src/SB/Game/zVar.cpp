@@ -88,8 +88,6 @@ U32 zVarEntryCB_SndMusicVol(void*);
 // This function is here to force the symbols to be linked.
 void __deadstripped_zVar()
 {
-    const char _449[0x0C] = {};
-    const char _450[0x0C] = {};
     const char _454[0x0C] = {};
     const char _485[0x0C] = {};
 
