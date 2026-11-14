@@ -576,7 +576,7 @@ config.libs = [
             Object(NonMatching, "SB/Core/x/xBehaveMgr.cpp", extra_cflags=["-sym on"]),
             Object(Matching, "SB/Core/x/xBehaviour.cpp", extra_cflags=["-sym on"]),
             Object(Matching, "SB/Core/x/xBehaveGoalSimple.cpp", extra_cflags=["-sym on"]),
-            Object(NonMatching, "SB/Core/x/xSkyDome.cpp"),
+            Object(Matching, "SB/Core/x/xSkyDome.cpp"),
             Object(Matching, "SB/Core/x/xRMemData.cpp", extra_cflags=["-sym on"]),
             Object(Matching, "SB/Core/x/xFactory.cpp"),
             Object(NonMatching, "SB/Core/x/xNPCBasic.cpp"),

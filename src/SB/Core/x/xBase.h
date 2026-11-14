@@ -28,6 +28,11 @@ struct xBase
     xBaseEventCB eventFunc; // 0xC
 };
 
+// xBase::baseFlags
+#define k_XBASE_IS_ENABLED ((U16)(1 << 0))
+#define k_XBASE_IS_VALID ((U16)(1 << 2))
+#define k_XBASE_RECEIVES_SHADOWS ((U16)(1 << 4))
+
 void xBaseInit(xBase* xb, xBaseAsset* asset);
 void xBaseSetup(xBase* xb);
 void xBaseSave(xBase* ent, xSerial* s);
@@ -36,22 +41,22 @@ void xBaseReset(xBase* xb, xBaseAsset* asset);
 U32 xBaseIsValid(xBase* xb);
 inline void xBaseValidate(xBase* xb)
 {
-    xb->baseFlags |= 0x4;
+    xb->baseFlags |= k_XBASE_IS_VALID;
 }
 
 inline bool xBaseIsEnabled(const xBase* xb)
 {
-    return (xb->baseFlags & 0x1);
+    return (xb->baseFlags & k_XBASE_IS_ENABLED);
 }
 
 inline void xBaseDisable(xBase* xb)
 {
-    xb->baseFlags &= ~0x1;
+    xb->baseFlags &= ~k_XBASE_IS_ENABLED;
 }
 
 inline void xBaseEnable(xBase* xb)
 {
-    xb->baseFlags |= 0x1;
+    xb->baseFlags |= k_XBASE_IS_ENABLED;
 }
 
 #endif
