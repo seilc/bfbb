@@ -30,7 +30,6 @@ void __deadstripped_rodata()
     const U8 dead10[0x28] = {};
 }
 
-static const basic_rect<F32> screen_bounds = { 0.0f, 0.0f, 1.0f, 1.0f };
 static const basic_rect<F32> default_adjust = { 0.0f, 0.0f, 1.0f, 1.0f };
 
 F32 dtscale = 1.0f;

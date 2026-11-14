@@ -35,8 +35,6 @@
 #include <string.h>
 #include <types.h>
 
-const static basic_rect<F32> screen_bounds = { 0.0f, 0.0f, 1.0f, 1.0f };
-
 static U32 sPlayerMarkerStartID;
 static U32 sPlayerMarkerStartCamID;
 static F32 sPlayerStartAngle;

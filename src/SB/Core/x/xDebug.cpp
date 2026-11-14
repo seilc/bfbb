@@ -12,8 +12,6 @@ struct xSB
     char* disp;
 };
 
-static const basic_rect<F32> screen_bounds = { 0, 0, 1, 1 };
-
 U32 gFrameCount;
 
 // UNUSED: needed to match (code from Rat GC)

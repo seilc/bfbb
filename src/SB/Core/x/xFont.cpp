@@ -37,8 +37,6 @@
 #define YJUSTIFY_CENTER 0x8
 #define YJUSTIFY_MASK (YJUSTIFY_TOP | YJUSTIFY_BOTTOM | YJUSTIFY_CENTER)
 
-static const basic_rect<F32> screen_bounds = { 0, 0, 1, 1 };
-
 namespace
 {
     struct font_asset
@@ -3685,16 +3683,6 @@ xtextbox::tag_type* xtextbox::find_format_tag(const substr& s)
 size_t xtextbox::layout::jots_size() const
 {
     return _jots_size;
-}
-
-xtextbox xtextbox::create()
-{
-    return create(xfont::create(), screen_bounds, 0, 0.0f, 0.0f, 0.0f, 0.0f);
-}
-
-xfont xfont::create()
-{
-    return create(0, 0.0f, 0.0f, 0.0f, g_WHITE, screen_bounds);
 }
 
 void xtextbox::jot::intersect_flags(const jot& other)

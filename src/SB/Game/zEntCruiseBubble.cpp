@@ -38,7 +38,6 @@
 #include <stdio.h>
 #include <string.h>
 
-basic_rect<F32> screen_bounds = { 0.0f, 0.0f, 1.0f, 1.0f };
 basic_rect<F32> default_adjust = { 0.0f, 0.0f, 1.0f, 1.0f };
 
 extern iColor_tag zEntCruiseBubble_color_80_00_00_FF; // 128, 0, 0, 255

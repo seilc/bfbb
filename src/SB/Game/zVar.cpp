@@ -8,7 +8,6 @@
 #include "zScene.h"
 #include "zUI.h"
 
-#include "xFont.h"
 #include "xSnd.h"
 #include "xString.h"
 #include "xsavegame.h"
@@ -100,6 +99,8 @@ void __deadstripped_zVar()
     const char _622[0x28] = {};
     const char _623[0x28] = {};
 }
+
+#include "xFont.h"
 
 // var_text callbacks
 namespace
@@ -201,7 +202,6 @@ namespace
     }
 } // namespace
 
-const basic_rect<F32> screen_bounds = { 0.0f, 0.0f, 1.0f, 1.0f };
 const basic_rect<F32> default_adjust = { 0.0f, 0.0f, 1.0f, 1.0f };
 
 namespace

@@ -1,11 +1,12 @@
 #ifndef XFONT_H
 #define XFONT_H
 
+#include "xColor.h"
 #include "xString.h"
 
-#include "iColor.h"
-
 #include <rwcore.h>
+
+static const basic_rect<F32> screen_bounds = { 0, 0, 1, 1 };
 
 struct xfont
 {
@@ -19,7 +20,6 @@ struct xfont
     static void init();
     static void set_render_state(RwRaster* raster);
     static void restore_render_state();
-    static xfont create();
     static xfont create(U32 id, F32 width, F32 height, F32 space, iColor_tag color,
                         const basic_rect<F32>& clip)
     {
@@ -33,6 +33,7 @@ struct xfont
 
         return r;
     }
+    static xfont create() { return create(0, 0, 0, 0, g_WHITE, screen_bounds); }
     basic_rect<F32> bounds(char c) const;
     basic_rect<F32> bounds(const char* text) const;
     basic_rect<F32> bounds(const char* text, size_t text_size, F32 max_width, size_t& size) const;
@@ -197,7 +198,7 @@ struct xtextbox
     static void register_tags(const tag_type* tag, size_t count);
     static tag_type* find_format_tag(const substr& s);
     static tag_type* find_format_tag(const substr& s, S32& index);
-    static xtextbox create();
+    static xtextbox create() { return create(xfont::create(), screen_bounds, 0, 0, 0, 0, 0); }
     static xtextbox create(const xfont& font, const basic_rect<F32>& bounds, U32 flags,
                            F32 line_space, F32 tab_stop, F32 left_indent, F32 right_indent)
     {
