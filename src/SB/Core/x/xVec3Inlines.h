@@ -13,6 +13,7 @@ void xVec3Init(xVec3* v, F32 _x, F32 _y, F32 _z);
 void xVec3AddTo(xVec3* o, const xVec3* v);
 void xVec3Lerp(xVec3* o, const xVec3* a, const xVec3* b, F32 t);
 void xVec3ScaleC(xVec3* o, const xVec3* v, F32 x, F32 y, F32 z);
+F32 xVec3Hdng(xVec3* hdng, const xVec3* a, const xVec3* b);
 F32 xVec3Dist(const xVec3* a, const xVec3* b);
 F32 xVec3Dist2(const xVec3* vecA, const xVec3* vecB);
 F32 xVec3Length2(const xVec3* vec);
@@ -99,6 +100,31 @@ void xVec3AddScaled(xVec3* o, const xVec3* v, F32 s);
     }                                                                                             \
     MACRO_STOP
 
+#define xVec3HdngMacro(o, a, b, outlen)                                                           \
+do {                                                                                              \
+    F32 dx__ = (b)->x - (a)->x;                                                                   \
+    F32 dy__ = (b)->y - (a)->y;                                                                   \
+    F32 dz__ = (b)->z - (a)->z;                                                                   \
+    F32 dist2 = dx__*dx__ + dy__*dy__ + dz__*dz__;                                                \
+    if (xeq(dist2, 1.0f, 0.00001f)) {                                                             \
+        (o)->x = dx__;                                                                            \
+        (o)->y = dy__;                                                                            \
+        (o)->z = dz__;                                                                            \
+        *(outlen) = 1.0f;                                                                         \
+    } else if (xeq(dist2, 0.0f, 0.00001f)) {                                                      \
+        (o)->x = 0.0f;                                                                            \
+        (o)->y = 1.0f;                                                                            \
+        (o)->z = 0.0f;                                                                            \
+        *(outlen) = 0.0f;                                                                         \
+    } else {                                                                                      \
+        *(outlen) = xsqrt(dist2);                                                                 \
+        F32 dist_inv = 1.0f / *(outlen);                                                          \
+        (o)->x = dx__ * dist_inv;                                                                 \
+        (o)->y = dy__ * dist_inv;                                                                 \
+        (o)->z = dz__ * dist_inv;                                                                 \
+    }                                                                                             \
+} while (0)
+
 inline void xVec3SMulBy(xVec3* v, F32 s)
 {
     v->x *= s;
@@ -111,6 +137,13 @@ inline void xVec3SubFrom(xVec3* o, const xVec3* v)
     o->x -= v->x;
     o->y -= v->y;
     o->z -= v->z;
+}
+
+inline F32 xVec3Hdng(xVec3* hdng, const xVec3* a, const xVec3* b)
+{
+    F32 d;
+    xVec3HdngMacro(hdng, a, b, &d);
+    return d;
 }
 
 #endif

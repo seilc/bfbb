@@ -75,4 +75,6 @@ F32 xrmod(F32 ang);
 
 template <class T> T range_limit(T v, T minv, T maxv);
 
+#include "xMathInlines.h"
+
 #endif
