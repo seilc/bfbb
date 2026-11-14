@@ -90,8 +90,13 @@ struct tweak_callback
     static tweak_callback create_change(void (*)(const tweak_info&));
 };
 
-void xprintf(const char* msg, ...);
-S32 xDebugModeAdd(const char* mode, void (*debugFunc)());
+typedef void(*xDebugModeCallback)();
+
+struct xSB;
+
+void xSBRender(xSB* sb); // UNUSED
+void xprintf(const char* fmt, ...);
+S32 xDebugModeAdd(const char* debugModeName, xDebugModeCallback func);
 void xDebugInit();
 void xDebugUpdate();
 void xDebugExit();
@@ -100,8 +105,6 @@ void xDebugTimestampScreen();
 inline void xDebugRemoveTweak(const char*)
 {
 }
-
-void xDebugUpdate();
 
 inline void xDebugAddTweak(const char*, F32*, F32, F32, const tweak_callback*, void*, U32)
 {

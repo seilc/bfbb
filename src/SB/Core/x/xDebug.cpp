@@ -1,57 +1,70 @@
 #include "xCommon.h"
 #include "xDebug.h"
 
+#include "xColor.h"
 #include "xFont.h"
 
-#include <types.h>
+struct xSB
+{
+    char* buf;
+    U32 max;
+    char* cur;
+    char* disp;
+};
+
+static const basic_rect<F32> screen_bounds = { 0, 0, 1, 1 };
 
 U32 gFrameCount;
 
-// Remaining weak definitions will match once referenced e.g. iColor_tag::operator=
-
-void xprintf(const char* msg, ...)
+// UNUSED: needed to match (code from Rat GC)
+void xSBRender(xSB* sb)
 {
-    // Redacted. :}
+    if (!RwCameraGetCurrentCamera()) {
+        return;
+    }
+
+    static xtextbox tb = xtextbox::create(
+        xfont::create(2, NSCREENX(12.0f), NSCREENY(12.0f), NSCREENX(2.0f), g_WHITE, screen_bounds),
+        screen_bounds, 0, NSCREENY(2.0f), 0.0f, 0.0f, 0.0f);
+    tb.font.width = NSCREENX(12.0f);
+    tb.font.height = NSCREENY(12.0f);
+    tb.bounds = screen_bounds;
+    tb.bounds.contract(NSCREENX(28.0f), NSCREENY(80.0f), NSCREENX(28.0f), NSCREENY(0.0f));
+    S32 lineCount = 1;
+    for (S32 i = 0; sb->disp[i] != '\0'; i++) {
+        if (sb->disp[i] == '\n') {
+            lineCount++;
+            if (lineCount >= 32) {
+                sb->disp[i] = '\0';
+                break;
+            }
+        }
+    }
+    tb.set_text(sb->disp);
+    tb.render(false);
 }
 
-S32 xDebugModeAdd(const char* mode, void (*debugFunc)())
+void xprintf(const char*, ...)
 {
-    // Redacted. :}
+}
+
+S32 xDebugModeAdd(const char*, xDebugModeCallback)
+{
     return -1;
 }
 
 void xDebugInit()
 {
-    // Redacted. :}
 }
 
 void xDebugUpdate()
 {
-    // Redacted. :}
 }
 
 void xDebugExit()
 {
-    // Redacted. :}
 }
 
 void xDebugTimestampScreen()
 {
-    // Redacted. :}
-}
-
-void __deadstripped_xDebug(F32 f, iColor_tag col)
-{
-    basic_rect<F32> r1;
-    basic_rect<F32> r2;
-    r1 = r2;
-    r1.contract(f, f, f, f);
-
-    F32 x = NSCREENX(f);
-    F32 y = NSCREENY(f);
-
-    xfont font;
-    font = xfont::create(0, f, f, f, col, r1);
-    xtextbox textbox = xtextbox::create(font, r1, 0, f, f, f, f);
-    textbox.render(true);
 }
