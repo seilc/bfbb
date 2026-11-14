@@ -1,4 +1,4 @@
-
+#include "xCommon.h"
 #include "zNPCTypeBossSB2.h"
 
 #include "zCamera.h"

@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "xLaserBolt.h"
 
 #include "zBase.h"

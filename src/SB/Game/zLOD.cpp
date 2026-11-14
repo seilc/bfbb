@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "zLOD.h"
 
 #include "zBase.h"

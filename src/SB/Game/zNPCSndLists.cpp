@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "zNPCSndLists.h"
 
 // clang-format off

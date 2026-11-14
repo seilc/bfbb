@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "zNPCGoalTiki.h"
 
 #include "zNPCGoals.h"

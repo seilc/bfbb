@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "zAnimList.h"
 
 #include "xMemMgr.h"

@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "zCamera.h"
 
 #include "zCameraTweak.h"

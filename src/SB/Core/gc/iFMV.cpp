@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "iFMV.h"
 
 #include "zGlobals.h"

@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "zLight.h"
 
 #include "zGlobals.h"

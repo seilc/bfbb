@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "iScrFX.h"
 
 #include <rwcore.h>

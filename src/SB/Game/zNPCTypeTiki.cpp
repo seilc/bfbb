@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "zNPCTypeTiki.h"
 
 #include "zEntButton.h"

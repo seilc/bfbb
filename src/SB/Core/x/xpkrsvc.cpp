@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "xpkrsvc.h"
 
 #include "xMath.h"

@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "iLight.h"
 
 RpWorld* gLightWorld;

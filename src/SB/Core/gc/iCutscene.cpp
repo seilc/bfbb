@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "iCutscene.h"
 
 #include "xMath.h"

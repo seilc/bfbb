@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "zVar.h"
 
 #include "zEntPlayer.h"

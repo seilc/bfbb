@@ -1,3 +1,5 @@
+#include "xCommon.h"
+
 #include <dolphin.h>
 
 static MIXChannel __MIXChannel[64];

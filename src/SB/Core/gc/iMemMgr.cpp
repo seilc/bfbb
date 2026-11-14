@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "iMemMgr.h"
 
 #include "xMemMgr.h"

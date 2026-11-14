@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "zEntPlayerBungeeState.h"
 
 #include "zBase.h"

@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "zEntPlayerOOBState.h"
 
 #include "zEntCruiseBubble.h"

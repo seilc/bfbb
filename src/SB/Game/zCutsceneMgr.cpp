@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "zCutsceneMgr.h"
 
 #include "zEnt.h"

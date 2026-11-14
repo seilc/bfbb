@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "zParEmitter.h"
 
 #include "zBase.h"

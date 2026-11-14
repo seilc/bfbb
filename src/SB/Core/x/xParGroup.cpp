@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "xParGroup.h"
 
 #include "xMath.h"

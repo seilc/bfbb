@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "iAnimSKB.h"
 
 #include <rtslerp.h>

@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "zNPCTypeVillager.h"
 
 #include "zGameExtras.h"

@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "zEvent.h"
 
 // NOTE (Square): Some of these strings appear to be incorrectly written given the enum value they correspond to.

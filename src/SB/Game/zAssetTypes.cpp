@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "zAssetTypes.h"
 
 #include "zEntCruiseBubble.h"

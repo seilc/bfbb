@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "xSpline.h"
 
 #include "xMathInlines.h"

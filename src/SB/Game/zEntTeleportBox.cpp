@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "zEntTeleportBox.h"
 
 #include "zEntCruiseBubble.h"

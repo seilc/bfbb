@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "zNPCGoalCommon.h"
 
 #pragma push

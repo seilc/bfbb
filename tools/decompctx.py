@@ -111,13 +111,22 @@ def main():
         help="""Include directory""",
         action="append",
     )
+    parser.add_argument(
+        "-p",
+        "--prefix",
+        help="""Prefix header, read before the file (MWCC -prefix)""",
+        action="append",
+    )
     args = parser.parse_args()
 
     if args.include is None:
         exit("No include directories specified")
     global include_dirs
     include_dirs = args.include
-    output = import_c_file(args.c_file)
+    output = ""
+    for prefix in args.prefix or []:
+        output += import_c_file(prefix)
+    output += import_c_file(args.c_file)
 
     with open(os.path.join(root_dir, args.output), "w", encoding="utf-8") as f:
         f.write(output)

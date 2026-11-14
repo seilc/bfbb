@@ -1,7 +1,7 @@
 #ifndef XDEBUG_H
 #define XDEBUG_H
 
-#include "xFont.h"
+#include "xString.h"
 
 #include <types.h>
 

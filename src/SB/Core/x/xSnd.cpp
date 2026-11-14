@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "xSnd.h"
 
 #include "xVec3.h"

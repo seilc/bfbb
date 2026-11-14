@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "zEntHangable.h"
 
 #include "zGlobals.h"

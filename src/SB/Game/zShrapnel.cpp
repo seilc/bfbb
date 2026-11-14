@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "zShrapnel.h"
 
 #include "zGlobals.h"

@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "zNPCGoalAmbient.h"
 
 #include "zGlobals.h"

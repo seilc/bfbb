@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "zNPCTypeBossPlankton.h"
 
 #include "xDebug.h"

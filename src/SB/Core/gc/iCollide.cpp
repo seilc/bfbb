@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "iCollide.h"
 
 #include "xMathInlines.h"

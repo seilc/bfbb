@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "zEntCruiseBubble.h"
 
 #include "zCamera.h"

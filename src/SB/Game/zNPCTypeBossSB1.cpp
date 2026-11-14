@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "zNPCTypeBossSB1.h"
 
 #include "zGlobals.h"

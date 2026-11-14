@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "zNPCTypeDuplotron.h"
 
 #include "zGlobals.h"

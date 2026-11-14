@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "zCamMarker.h"
 
 void zCamMarkerInit(xBase* b, xCamAsset* asset)

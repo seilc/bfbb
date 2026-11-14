@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "zMovePoint.h"
 
 #include "zNPCSupplement.h"

@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "isavegame.h"
 
 #include "zGlobals.h"

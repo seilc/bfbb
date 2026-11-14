@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "xMath3.h"
 
 #include "xClimate.h" // xMat3x3Identity

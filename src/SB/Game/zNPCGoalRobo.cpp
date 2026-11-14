@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "zNPCGoalRobo.h"
 
 #include "zGameExtras.h"

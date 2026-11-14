@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "zEntSimpleObj.h"
 
 #include <string.h>

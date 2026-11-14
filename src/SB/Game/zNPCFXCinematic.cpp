@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "zNPCFXCinematic.h"
 
 #include "zNPCTypeBossSB2.h"

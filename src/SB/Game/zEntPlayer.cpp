@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "zEntPlayer.h"
 
 #include "zBase.h"

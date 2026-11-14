@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "zNPCTypePrawn.h"
 
 #include "zEntCruiseBubble.h"

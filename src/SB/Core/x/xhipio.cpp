@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "xhipio.h"
 
 #include <string.h>

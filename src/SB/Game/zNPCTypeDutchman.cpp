@@ -1,4 +1,4 @@
-
+#include "xCommon.h"
 #include "zNPCTypeDutchman.h"
 
 #include "zGlobals.h"

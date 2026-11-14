@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "iDraw.h"
 
 #include <dolphin.h>

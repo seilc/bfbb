@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "zRumble.h"
 
 #include "zGlobals.h"

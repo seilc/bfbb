@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "zNPCTypeRobot.h"
 
 #include "zGlobals.h"

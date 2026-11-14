@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "iMorph.h"
 
 #include "iModel.h"

@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "zTaxi.h"
 
 #include "zEntPlayer.h"

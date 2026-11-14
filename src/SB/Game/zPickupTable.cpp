@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "zPickupTable.h"
 
 #include "zGlobals.h"

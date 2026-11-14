@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "xHudFontMeter.h"
 
 #include "xMath2.h"

@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "xBehaveGoalSimple.h"
 
 void xGoalSimple_RegisterTypes(xFactory* fac)

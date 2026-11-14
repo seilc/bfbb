@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "zEntPickup.h"
 
 #include "zEntPlayerBungeeState.h"

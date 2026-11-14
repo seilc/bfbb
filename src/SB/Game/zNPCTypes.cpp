@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "zNPCTypes.h"
 
 #include "zNPCTypeAmbient.h"

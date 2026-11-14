@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "zNPCSndTable.h"
 
 #include "zGameExtras.h"

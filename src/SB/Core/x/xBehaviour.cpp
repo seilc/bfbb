@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "xBehaviour.h"
 
 xBase* xGoal::GetOwner() const

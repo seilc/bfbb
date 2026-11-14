@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "zLightEffect.h"
 
 #include "xMath.h"

@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "zEGenerator.h"
 
 #include "zCollGeom.h"

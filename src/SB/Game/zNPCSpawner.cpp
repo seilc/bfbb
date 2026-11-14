@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "zNPCSpawner.h"
 
 #include "zEvent.h"

@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "zNPCTypeSubBoss.h"
 
 #include "zNPCTypeDutchman.h"

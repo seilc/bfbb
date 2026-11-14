@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "iModel.h"
 
 #include "xMathInlines.h"

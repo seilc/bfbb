@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "zTalkBox.h"
 
 #include "zBase.h"

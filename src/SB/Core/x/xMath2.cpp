@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "xMath2.h"
 
 const basic_rect<F32> basic_rect<F32>::m_Null = { 0.0f, 0.0f, 0.0f, 0.0f };

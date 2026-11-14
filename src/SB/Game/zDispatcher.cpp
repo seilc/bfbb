@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "zDispatcher.h"
 
 #include "zFMV.h"

@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "xColor.h"
 
 const iColor_tag g_RED = { 255, 0, 0, 255 };

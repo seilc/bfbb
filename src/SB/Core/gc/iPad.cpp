@@ -1,3 +1,6 @@
+#include "xCommon.h"
+#include "iPad.h"
+
 #include "zGlobals.h"
 
 #include "xTRC.h"

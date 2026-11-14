@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "xstransvc.h"
 
 #include "xString.h"

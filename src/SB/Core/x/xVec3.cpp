@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "xVec3.h"
 
 #include "xMath.h"

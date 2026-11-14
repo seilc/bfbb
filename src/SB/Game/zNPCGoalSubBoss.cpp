@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "zNPCGoalSubBoss.h"
 
 #include "zNPCGoals.h"

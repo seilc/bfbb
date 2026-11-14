@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "zNPCTypeKingJelly.h"
 
 #include "zCamera.h"

@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "xEntDrive.h"
 
 #include "xEnt.h"

@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "zMain.h"
 
 #include "zAssetTypes.h"

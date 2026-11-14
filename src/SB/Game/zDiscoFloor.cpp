@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "zDiscoFloor.h"
 
 #include "zEntSimpleObj.h"

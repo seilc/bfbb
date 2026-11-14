@@ -1,3 +1,4 @@
+#include "xCommon.h"
 #include "zEntDestructObj.h"
 
 #include <types.h>
