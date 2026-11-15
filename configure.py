@@ -455,7 +455,7 @@ config.libs = [
             Object(NonMatching, "SB/Core/x/xMath.cpp"),
             Object(Matching, "SB/Core/x/xMath2.cpp"),
             Object(NonMatching, "SB/Core/x/xMath3.cpp"),
-            Object(NonMatching, "SB/Core/x/xMemMgr.cpp"),
+            Object(Matching, "SB/Core/x/xMemMgr.cpp"),
             Object(NonMatching, "SB/Core/x/xModel.cpp"),
             Object(Matching, "SB/Core/x/xMorph.cpp"),
             Object(Matching, "SB/Core/x/xMovePoint.cpp", extra_cflags=["-sym on"]),

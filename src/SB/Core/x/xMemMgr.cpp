@@ -3,36 +3,53 @@
 
 #include "iMemMgr.h"
 #include "iSystem.h"
+#include "xMath.h"
 
 #include <rwcore.h>
-
 #include <string.h>
-#include <types.h>
 
-xMemInfo_tag gMemInfo;
-xMemHeap_tag gxHeap[3];
+enum
+{
+    eMemHeapGrowsDown = 0x100,
+    eMemHeapHeaderInBlock = 0x8000,
+    eMemHeapBlockList = 0x10000,
+};
 
+typedef struct xMemBlkInfo_tag
+{
+    xMemBlock* header;
+    U32 pre;
+    U32 block;
+    U32 post;
+    U32 curr;
+    U32 waste;
+    U32 total;
+} xMemBlkInfo;
+
+xMemInfo gMemInfo;
 U32 gActiveHeap;
-void (*sMemBaseNotifyFunc)();
-typedef U32 xMemAddr;
+xMemHeap gxHeap[XMEM_MAX_HEAPS];
+xMemBaseNotifyFunc sMemBaseNotifyFunc;
 
 void xMemDebug_SoakLog(const char*)
 {
 }
 
-// The instructions putting 0/1/2 into registers happen in the wrong order.
 void xMemInit()
 {
     iMemInit();
+
     xMemInitHeap(&gxHeap[0], gMemInfo.DRAM.addr, gMemInfo.DRAM.size, 0x8826);
     xMemInitHeap(&gxHeap[1], gMemInfo.DRAM.addr + gMemInfo.DRAM.size, gMemInfo.DRAM.size, 0x8925);
     xMemInitHeap(&gxHeap[2], gMemInfo.DRAM.addr + gMemInfo.DRAM.size, gMemInfo.DRAM.size, 0x892A);
+
     gxHeap[0].opp_heap[0] = 1;
     gxHeap[0].opp_heap[1] = 2;
     gxHeap[1].opp_heap[0] = 0;
     gxHeap[1].opp_heap[1] = 2;
     gxHeap[2].opp_heap[0] = 0;
     gxHeap[2].opp_heap[1] = 1;
+
     gActiveHeap = 0;
 }
 
@@ -41,19 +58,17 @@ void xMemExit()
     iMemExit();
 }
 
-void xMemInitHeap(xMemHeap_tag* heap, U32 base, U32 size, U32 flags)
+void xMemInitHeap(xMemHeap* heap, U32 base, U32 size, U32 flags)
 {
     U32 old_base = base;
+
     S32 align = 1 << ((flags >> 9) & 0x1F);
-    if (flags & 0x100)
-    {
-        base = base & -align;
-        size -= (old_base - base);
-    }
-    else
-    {
-        base = (old_base + align - 1) & -align;
-        size -= (base - old_base);
+    if (flags & eMemHeapGrowsDown) {
+        base = old_base & -align;
+        size -= old_base - base;
+    } else {
+        base = -align & (old_base + align - 1);
+        size -= base - old_base;
     }
 
     heap->state_idx = 0;
@@ -61,173 +76,55 @@ void xMemInitHeap(xMemHeap_tag* heap, U32 base, U32 size, U32 flags)
     heap->size = size;
     heap->flags = flags;
     heap->lastblk = NULL;
-    xHeapState_tag* sp = &heap->state[heap->state_idx];
+
+    xHeapState* sp = &heap->state[heap->state_idx];
     sp->curr = base;
     sp->blk_ct = 0;
 
-    if (flags & 0x10000)
-    {
-        heap->max_blks = (1 << ((flags >> 14) & 0x1));
-        heap->blk = (xMemBlock_tag*)malloc(heap->max_blks * sizeof(xMemBlock_tag));
-        memset(heap->blk, 0, heap->max_blks * sizeof(xMemBlock_tag));
+    if (flags & eMemHeapBlockList) {
+        heap->max_blks = 1 << ((flags >> 14) & 1);
+        heap->blk = (xMemBlock*)malloc(heap->max_blks * sizeof(xMemBlock));
+        memset(heap->blk, 0, heap->max_blks * sizeof(xMemBlock));
+    } else {
+        heap->max_blks = 0xFFFF;
+        heap->blk = NULL;
     }
-    else
-    {
-        heap->max_blks = -1;
-        heap->blk = 0;
-    }
+
     heap->opp_heap[0] = -1;
     heap->opp_heap[1] = -1;
 }
 
-#if 0
-// Not particularly close. This function is a nightmare, it has so many
-// variables to untangle.
-void xMemGetBlockInfo(xMemHeap_tag* heap, U32 size, S32 align, xMemBlkInfo_tag* info)
+static U32 xMemGetBlockInfo(xMemHeap* heap, U32 size, S32 align, xMemBlkInfo* info)
 {
-    S32 hdr = 1;
-    xHeapState_tag* sp = &heap->state[heap->state_idx];
-    if (heap->flags & 0x100)
-    {
-        hdr = -1;
-    }
+    S32 header_size, total, hdr, pre, block, post, dir;
 
-    S32 remainder = 0xc & -(heap->flags & 0x10000);
-    S32 pre;
-    S32 post;
-    S32 block;
-    S32 r8;
-    if (heap->flags & 0x100)
-    {
-        block = -remainder;
-        pre = -(remainder + size + ((sp->curr - remainder - size) & (align - 1)));
-        post = pre + size;
-        r8 = -pre;
-    }
-    else
-    {
-        block = 0;
-        if (r8 = (align - 1) & (sp->curr + remainder))
-        {
-            r8 = align;
-        }
-        pre = (align + remainder) - r8;
-        post = pre + size;
-        r8 = post;
-    }
+    xHeapState* sp = &heap->state[heap->state_idx];
+    dir = (heap->flags & eMemHeapGrowsDown) ? -1 : 1;
+    header_size = (heap->flags & eMemHeapHeaderInBlock) ? (S32)sizeof(xMemBlock) : 0;
 
-    S32 total = (r8 + 3) & 0xFFFFFFFE;
-    if (heap->flags & 0x10000)
-    {
-        info->header = &heap->blk[sp->curr];
-    }
-    else
-    {
-        info->header = (xMemBlock_tag*)(sp->curr + block);
-    }
-    info->pre = sp->curr + pre;
-    info->block = sp->curr + pre;
-    info->post = sp->curr + post;
-    info->curr = sp->curr + hdr * total;
-    info->waste = total - (remainder + size);
-    info->total = total;
-}
-#endif
-
-#if 0
-// Not particularly close. Not 100% confident that I understand what's going on,
-// in particular the bit that goes:
-// (heap->lastblk->size + size) - heap->lastblk->size;
-// It really seems like the assembly code is adding and then immediately
-// subtracting again, and I don't see why it would want to do that.
-#undef xMemGrowAlloc
-void* xMemGrowAlloc(U32 heapID, U32 size)
-{
-    size = (size + 3) & 0xFFFFFFFC;
-    xMemHeap_tag* heap = &gxHeap[heapID];
-    xHeapState_tag* sp = &heap->state[heap->state_idx];
-    // pad size to multiple of 4 bytes
-    xMemBlock_tag* hdr = heap->lastblk;
-    U32 anotherVar = (heap->lastblk->size + size) - heap->lastblk->size;
-    if (sp->used + anotherVar > heap->size)
-    {
-        return 0;
-    }
-    else
-    {
-        void* memptr;
-        if (heap->flags & 0x100)
-        {
-            memptr = (void*)(hdr->addr - size);
-            hdr->addr = (U32)memptr;
-            sp->curr -= anotherVar;
-        }
-        else
-        {
-            sp->curr += anotherVar;
-            memptr = (void*)(hdr->addr + heap->lastblk->size);
-        }
-        sp->used += anotherVar;
-        hdr->size += size;
-        memset(memptr, 0, size);
-        return memptr;
-    }
-}
-#endif
-
-#define XMEMHEAP_GET_0x8000(flags) (S32)(((flags) >> 15) & 0x1)
-
-U32 xMemGetBlockInfo(xMemHeap_tag* heap, U32 size, S32 align, xMemBlkInfo_tag* info)
-{
-    S32 header_size;
-    S32 total;
-    S32 hdr;
-    S32 pre;
-    S32 block;
-    S32 post;
-    S32 dir;
-    xHeapState_tag* sp = &heap->state[heap->state_idx];
-    S32 r10;
-
-    dir = (heap->flags & 0x100) ? -1 : 1;
-    r10 = sizeof(xMemBlock_tag);
-    r10 &= -XMEMHEAP_GET_0x8000(heap->flags);
-    header_size = r10;
-
-    if (heap->flags & 0x100)
-    {
+    if (heap->flags & eMemHeapGrowsDown) {
+        S32 remainder = (sp->curr - header_size - size) & (align - 1);
         hdr = -header_size;
-
-        S32 remainder = (align - 1) & (sp->curr - header_size - size);
-
-        block = -(S32)(header_size + size + remainder);
+        block = -(header_size + size + remainder);
         pre = block;
         post = block + size;
         total = -pre;
-    }
-    else
-    {
+    } else {
         hdr = 0;
-
-        S32 remainder = (align - 1) & (sp->curr + header_size);
-        if (!remainder)
-            remainder = align;
-
+        S32 remainder = (sp->curr + header_size) & (align - 1);
+        if (remainder == 0) remainder = align;
         block = align + header_size - remainder;
         pre = block;
         post = block + size;
         total = post;
     }
 
-    total = (S32)ROUND_UP_PTR(total, 4);
+    total = (total + 3) & ~3;
 
-    if (heap->flags & 0x10000)
-    {
+    if (heap->flags & eMemHeapBlockList) {
         info->header = &heap->blk[sp->blk_ct];
-    }
-    else
-    {
-        info->header = (xMemBlock_tag*)(sp->curr + hdr);
+    } else {
+        info->header = (xMemBlock*)(sp->curr + hdr);
     }
 
     info->pre = sp->curr + pre;
@@ -242,115 +139,106 @@ U32 xMemGetBlockInfo(xMemHeap_tag* heap, U32 size, S32 align, xMemBlkInfo_tag* i
 
 void* xMemGrowAlloc(U32 heapID, U32 size)
 {
-    size = (S32)ROUND_UP_PTR(size, 4);
+    U32 oldalignsize, newalignsize;
+    xMemHeap* heap;
+    xMemBlock* hdr;
+    xHeapState* sp;
+    void* memptr;
 
-    U32 oldalignsize;
-    U32 newalignsize;
-    xMemHeap_tag* heap = &gxHeap[heapID];
-    xMemBlock_tag* hdr = heap->lastblk;
-    xHeapState_tag* sp = &heap->state[heap->state_idx];
+    size = (size + 3) & ~3;
+
+    heap = &gxHeap[heapID];
+    sp = &heap->state[heap->state_idx];
+    hdr = heap->lastblk;
 
     oldalignsize = hdr->size;
     newalignsize = hdr->size + size;
-    if (sp->used + (newalignsize - oldalignsize) > heap->size)
-    {
+
+    if (sp->used + (newalignsize - oldalignsize) > heap->size) {
         return NULL;
     }
 
-    void* memptr;
-
-    if (heap->flags & 0x100)
-    {
+    if (heap->flags & eMemHeapGrowsDown) {
         memptr = (void*)(hdr->addr - size);
-        hdr->addr = (xMemAddr)memptr;
+        hdr->addr -= size;
         sp->curr -= newalignsize - oldalignsize;
-    }
-    else
-    {
+    } else {
         memptr = (void*)(hdr->addr + hdr->size);
         sp->curr += newalignsize - oldalignsize;
     }
 
     sp->used += newalignsize - oldalignsize;
     hdr->size += size;
-
     memset(memptr, 0, size);
-
     return memptr;
 }
 
 void* xMemAlloc(U32 heapID, U32 size, S32 align)
 {
-    // This variable not in DWARF
-    S32 true_align;
-
-    xMemHeap_tag* heap;
-    xMemBlock_tag* hdr;
-    xHeapState_tag* sp;
+    xMemHeap* heap;
+    xMemBlock* hdr;
+    xHeapState* sp;
+    xMemBlkInfo info;
+    U32 total;
 
     heap = &gxHeap[heapID];
     sp = &heap->state[heap->state_idx];
 
-    true_align = 1 << (heap->flags >> 9 & 0x1f);
-    if (align > true_align)
-    {
-        true_align = align;
-    }
+    align = MAX(align, 1 << ((heap->flags >> 9) & 0x1F));
 
-    if (size == 0)
-    {
+    if (size == 0) {
         return (void*)0xDEADBEEF;
     }
 
-    xMemBlkInfo_tag info;
-    U32 total = xMemGetBlockInfo(heap, size, true_align, &info);
+    total = xMemGetBlockInfo(heap, size, align, &info);
     hdr = info.header;
 
-    if (sp->used + total > heap->size)
-    {
+    if (sp->used + total > heap->size) {
         return NULL;
     }
 
     sp->curr = info.curr;
-    sp->blk_ct += 1;
-    if (heap->flags & 0x10000)
-    {
+    sp->blk_ct++;
+    if (heap->flags & eMemHeapBlockList) {
         return NULL;
     }
 
     hdr->addr = info.block;
     hdr->size = size;
-    hdr->align = true_align;
+    hdr->align = align;
+
     sp->used += total;
     sp->wasted += info.waste;
 
     memset((void*)hdr->addr, 0, size);
     heap->lastblk = hdr;
+
     return (void*)hdr->addr;
 }
 
 void* xMemPushTemp(U32 size)
 {
-    return RwMalloc(size);
+    void* addr = RwMalloc(size);
+    return addr;
 }
 
-void xMemPopTemp(void* memory)
+void xMemPopTemp(void* addr)
 {
-    RwFree(memory);
+    RwFree(addr);
 }
 
 S32 xMemPushBase(U32 heapID)
 {
-    xMemHeap_tag* heap = &gxHeap[heapID];
+    xMemHeap* heap = &gxHeap[heapID];
 
-    heap->state_idx += 1;
-    xHeapState_tag* sp = &heap->state[heap->state_idx];
+    heap->state_idx++;
+    xHeapState* sp = &heap->state[heap->state_idx];
     *sp = *(sp - 1);
 
-    if (sMemBaseNotifyFunc != NULL)
-    {
+    if (sMemBaseNotifyFunc) {
         sMemBaseNotifyFunc();
     }
+
     return heap->state_idx - 1;
 }
 
@@ -359,18 +247,24 @@ S32 xMemPushBase()
     return xMemPushBase(gActiveHeap);
 }
 
-// Load/Store swap of sMemBaseNotifyFunc and state_idx
 S32 xMemPopBase(U32 heapID, S32 depth)
 {
-    xMemHeap_tag* heap = &gxHeap[heapID];
-    if (depth < 0)
-    {
-        depth = heap->state_idx + depth;
+    xMemHeap* heap;
+    xHeapState* sp;
+    S32 new_idx;
+
+    heap = &gxHeap[heapID];
+
+    if (depth < 0) {
+        new_idx = heap->state_idx + depth;
+    } else {
+        new_idx = depth;
     }
 
-    heap->state_idx = depth;
-    if (sMemBaseNotifyFunc != NULL)
-    {
+    heap->state_idx = new_idx;
+    sp = &heap->state[heap->state_idx];
+
+    if (sMemBaseNotifyFunc) {
         sMemBaseNotifyFunc();
     }
 
@@ -387,7 +281,7 @@ S32 xMemGetBase(U32 heapID)
     return gxHeap[heapID].state_idx;
 }
 
-void xMemRegisterBaseNotifyFunc(void (*func)())
+void xMemRegisterBaseNotifyFunc(xMemBaseNotifyFunc func)
 {
     sMemBaseNotifyFunc = func;
 }
@@ -397,40 +291,27 @@ S32 xMemGetBase()
     return xMemGetBase(gActiveHeap);
 }
 
-void xMemPoolAddElements(xMemPool* pool, void* buffer, U32 count)
+static void xMemPoolAddElements(xMemPool* pool, void* buffer, U32 count)
 {
     S32 i;
-    void* curr;
-    void (*initCB)(xMemPool*, void*);
-    U32 next;
-    U32 size;
+    void* curr = buffer;
+    xMemPoolInitCallback initCB = pool->InitCB;
+    U32 next = pool->NextOffset;
+    U32 size = pool->Size;
 
-    initCB = pool->InitCB;
-    next = pool->NextOffset;
-    size = pool->Size;
-
-    curr = buffer;
-    for (i = 0; i < (S32)count - 1; i++)
-    {
-        *(void**)((U32)curr + next) = (void*)((U32)curr + size);
-        if (initCB != NULL)
-        {
-            initCB(pool, curr);
-        }
-        curr = (void*)((U32)curr + size);
+    for (i = 0; i < (S32)count - 1; i++) {
+        *(void**)((U8*)curr + next) = (U8*)curr + size;
+        if (initCB) initCB(pool, curr);
+        curr = (U8*)curr + size;
     }
+    *(void**)((U8*)curr + next) = pool->FreeList;
+    if (initCB) initCB(pool, curr);
 
-    *(void**)((U32)curr + next) = pool->FreeList;
-    if (initCB != NULL)
-    {
-        initCB(pool, curr);
-    }
     pool->FreeList = buffer;
     pool->Total += count;
 }
 
-void xMemPoolSetup(xMemPool* pool, void* buffer, U32 nextOffset, U32 flags, xMemPoolInitCB initCB,
-                   U32 size, U32 count, U32 numRealloc)
+void xMemPoolSetup(xMemPool* pool, void* buffer, U32 nextOffset, U32 flags, xMemPoolInitCallback initCB, U32 size, U32 count, U32 numRealloc)
 {
     pool->FreeList = NULL;
     pool->NextOffset = nextOffset;
@@ -441,6 +322,7 @@ void xMemPoolSetup(xMemPool* pool, void* buffer, U32 nextOffset, U32 flags, xMem
     pool->Size = size;
     pool->NumRealloc = numRealloc;
     pool->Total = 0;
+
     xMemPoolAddElements(pool, buffer, count);
 }
 
@@ -450,17 +332,15 @@ void* xMemPoolAlloc(xMemPool* pool)
     U32 next = pool->NextOffset;
     U32 flags = pool->Flags;
 
-    if (retval == NULL)
-    {
-        xMemPoolAddElements(pool, xMemAlloc(gActiveHeap, pool->NumRealloc * pool->Size, 0),
-                            pool->NumRealloc);
+    if (!retval) {
+        xMemPoolAddElements(pool, xMEMALLOC(pool->NumRealloc * pool->Size, 0), pool->NumRealloc);
         retval = pool->FreeList;
     }
 
-    pool->FreeList = *(void**)((U32)retval + next);
-    if (flags & 1)
-    {
-        *(void**)((U32)retval + next) = pool->UsedList;
+    pool->FreeList = *(void**)((U8*)retval + next);
+
+    if (flags & 0x1) {
+        *(void**)((U8*)retval + next) = pool->UsedList;
         pool->UsedList = retval;
     }
 
@@ -469,35 +349,24 @@ void* xMemPoolAlloc(xMemPool* pool)
 
 void xMemPoolFree(xMemPool* pool, void* data)
 {
-    void** prev;
-    void* freeList;
-    U32 next;
-    void* curr;
+    if (data) {
+        void* freeList = pool->FreeList;
+        U32 next = pool->NextOffset;
+        U32 flags = pool->Flags;
 
-    if (data == NULL)
-    {
-        return;
-    }
-
-    freeList = pool->FreeList;
-    next = pool->NextOffset;
-    if (pool->Flags & 1)
-    {
-        prev = &pool->UsedList;
-        curr = pool->UsedList;
-
-        while (curr != NULL && curr != data)
-        {
-            prev = (void**)((U32)curr + next);
-            curr = *prev;
+        if (flags & 0x1) {
+            void** prev = &pool->UsedList;
+            void* curr = pool->UsedList;
+            while (curr && curr != data) {
+                prev = (void**)((U8*)curr + next);
+                curr = *(void**)((U8*)curr + next);
+            }
+            if (curr) {
+                *prev = *(void**)((U8*)curr + next);
+            }
         }
 
-        if (curr != NULL)
-        {
-            *prev = *(void**)((U32)curr + next);
-        }
+        *(void**)((U8*)data + next) = freeList;
+        pool->FreeList = data;
     }
-
-    *(void**)((U32)data + next) = freeList;
-    pool->FreeList = data;
 }
