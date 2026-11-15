@@ -2,12 +2,32 @@
 #include "xJSP.h"
 
 #include "zGlobals.h"
+#include "zScene.h"
 
 #include <string.h>
-#include <types.h>
+
+enum
+{
+    rwID_HI_COLLTREE = 0xBEEF01,
+    rwID_HI_JSPINFO = 0xBEEF02,
+    rwID_HI_STRIPVECS = 0xBEEF03
+};
+
+struct __rwMark
+{
+    U32 type;
+    U32 length;
+    U32 libraryID;
+};
+
+struct xJSPHeaderEx : xJSPHeader
+{
+    U32 stripVecCount;
+    RwV3d* stripVecList;
+};
 
 static RwV3d* sCurrVert;
-static S32 sAtomicStartCount;
+static U32 sAtomicStartCount;
 static RwV3d** sAtomicStartVert;
 
 static RpAtomic* CountAtomicCB(RpAtomic* atomic, void* data)
@@ -20,8 +40,7 @@ static RpAtomic* CountAtomicCB(RpAtomic* atomic, void* data)
 static RpMesh* AddMeshCB(RpMesh* mesh, RpMeshHeader*, void* pData)
 {
     RwV3d** stripVert = (RwV3d**)pData;
-    for (U32 i = 0; i < mesh->numIndices; i++)
-    {
+    for (U32 i = 0; i < mesh->numIndices; i++) {
         **stripVert = sCurrVert[mesh->indices[i]];
         (*stripVert)++;
     }
@@ -30,11 +49,9 @@ static RpMesh* AddMeshCB(RpMesh* mesh, RpMeshHeader*, void* pData)
 
 static RpAtomic* AddAtomicCB(RpAtomic* atomic, void* data)
 {
-    // The dwarf defines this variable but it looks like it isnt used
-    // TempAtomicList** tmpList;
     sAtomicStartVert[--sAtomicStartCount] = *(RwV3d**)data;
     sCurrVert = atomic->geometry->morphTarget->verts;
-    _rpMeshHeaderForAllMeshes(atomic->geometry->mesh, (RpMeshCallBack)&AddMeshCB, data);
+    _rpMeshHeaderForAllMeshes(atomic->geometry->mesh, AddMeshCB, data);
     return atomic;
 }
 
@@ -58,35 +75,33 @@ void xJSP_MultiStreamRead(void* data, U32 size, xJSPHeader** jsp)
     U32 i;
     RpClump* clump;
     xClumpCollBSPTree* colltree;
+    xJSPHeaderEx* hdr;
 
-    if (!*jsp)
-    {
-        *jsp = (xJSPHeaderGC*)RwMalloc(sizeof(xJSPHeaderGC));
-        memset(*jsp, 0, sizeof(xJSPHeaderGC));
+    if (!*jsp) {
+        *jsp = (xJSPHeaderEx*)RwMalloc(sizeof(xJSPHeaderEx));
+        memset(*jsp, 0, sizeof(xJSPHeaderEx));
     }
 
-    xJSPHeaderGC* hdr = (xJSPHeaderGC*)*jsp;
+    hdr = (xJSPHeaderEx*)*jsp;
 
     __rwMark mark;
     __rwMark* mp = (__rwMark*)data;
-    memmove(&mark, mp, sizeof(__rwMark));
-    RwMemNative32(&mark, sizeof(__rwMark));
+    U32 _size = sizeof(__rwMark);
+    memmove(&mark, mp, _size);
+    RwMemNative32(&mark, _size);
 
-    if (mark.type == 0xBEEF01)
-    {
+    if (mark.type == rwID_HI_COLLTREE) {
         data = mp + 1;
         colltree = xClumpColl_StaticBufferInit(data, mark.length);
 
         size -= mark.length + sizeof(__rwMark);
-        data = (U8*)data + mark.length;
-
-        mp = (__rwMark*)data;
+        mp = (__rwMark*)((U8*)data + mark.length);
         memmove(&mark, mp, sizeof(__rwMark));
         RwMemNative32(&mark, sizeof(__rwMark));
 
         data = mp + 1;
-
         xJSPHeader* tmphdr = (xJSPHeader*)data;
+
         strncpy(hdr->idtag, tmphdr->idtag, sizeof(hdr->idtag));
         hdr->version = tmphdr->version;
         hdr->jspNodeCount = tmphdr->jspNodeCount;
@@ -95,27 +110,20 @@ void xJSP_MultiStreamRead(void* data, U32 size, xJSPHeader** jsp)
 
         size -= mark.length + sizeof(__rwMark);
 
-        for (i = 0; i < colltree->numTriangles; i++)
-        {
-            colltree->triangles[i].matIndex =
-                hdr->jspNodeList[hdr->jspNodeCount - 1 - colltree->triangles[i].v.i.atomIndex]
-                    .originalMatIndex;
+        for (i = 0; i < colltree->numTriangles; i++) {
+            colltree->triangles[i].matIndex = hdr->jspNodeList[hdr->jspNodeCount - 1 - colltree->triangles[i].v.i.atomIndex].originalMatIndex;
         }
 
-        if (size >= sizeof(__rwMark))
-        {
+        if (size >= sizeof(__rwMark)) {
             mp = (__rwMark*)((U8*)data + mark.length);
             memmove(&mark, mp, sizeof(__rwMark));
             RwMemNative32(&mark, sizeof(__rwMark));
+            if (mark.type == rwID_HI_STRIPVECS) {
+                data = mp + 1;
 
-            data = mp + 1;
-
-            if (mark.type == 0xBEEF03)
-            {
                 hdr->stripVecCount = *(U32*)data;
                 data = (U32*)data + 1;
                 hdr->stripVecList = (RwV3d*)data;
-
                 sAtomicStartCount = RpClumpGetNumAtomics(hdr->clump);
                 sAtomicStartVert = (RwV3d**)RwMalloc(sAtomicStartCount * sizeof(RwV3d*));
 
@@ -124,30 +132,24 @@ void xJSP_MultiStreamRead(void* data, U32 size, xJSPHeader** jsp)
             }
         }
 
-        if (hdr->stripVecCount == 0)
-        {
+        if (hdr->stripVecCount == 0) {
             hdr->stripVecCount = 0;
             sAtomicStartCount = 0;
-
             RpClumpForAllAtomics(hdr->clump, CountAtomicCB, &hdr->stripVecCount);
 
             hdr->stripVecList = (RwV3d*)RwMalloc(hdr->stripVecCount * sizeof(RwV3d));
-            sAtomicStartVert = (RwV3d**)RwMalloc(sAtomicStartCount * sizeof(RwV3d**));
+            sAtomicStartVert = (RwV3d**)RwMalloc(sAtomicStartCount * sizeof(RwV3d*));
 
             RwV3d* currVec = hdr->stripVecList;
             RpClumpForAllAtomics(hdr->clump, AddAtomicCB, &currVec);
         }
 
-        for (i = 0; i < colltree->numTriangles; i++)
-        {
-            colltree->triangles[i].v.p = sAtomicStartVert[colltree->triangles[i].v.i.atomIndex] +
-                                         colltree->triangles[i].v.i.meshVertIndex;
+        for (i = 0; i < colltree->numTriangles; i++) {
+            colltree->triangles[i].v.p = sAtomicStartVert[colltree->triangles[i].v.i.atomIndex] + colltree->triangles[i].v.i.meshVertIndex;
         }
 
         RwFree(sAtomicStartVert);
-    }
-    else
-    {
+    } else {
         RwMemory rwmem;
         rwmem.start = (RwUInt8*)data;
         rwmem.length = size;
@@ -157,31 +159,21 @@ void xJSP_MultiStreamRead(void* data, U32 size, xJSPHeader** jsp)
         clump = RpClumpStreamRead(stream);
         RwStreamClose(stream, NULL);
 
-        if (!hdr->clump)
-        {
+        if (!hdr->clump) {
             hdr->clump = clump;
-        }
-        else
-        {
-            S32 i, atomCount;
-
-            atomCount = RpClumpGetNumAtomics(clump);
-            if (atomCount)
-            {
+        } else {
+            S32 i, atomCount = RpClumpGetNumAtomics(clump);
+            if (atomCount) {
                 RpAtomic** atomList = (RpAtomic**)RwMalloc(atomCount * sizeof(RpAtomic*));
                 RpAtomic** atomCurr = atomList;
                 RpClumpForAllAtomics(clump, ListAtomicCB, &atomCurr);
-
-                for (i = atomCount - 1; i >= 0; i--)
-                {
+                for (i = atomCount - 1; i >= 0; i--) {
                     RpClumpRemoveAtomic(clump, atomList[i]);
                     RpClumpAddAtomic(hdr->clump, atomList[i]);
                     RpAtomicSetFrame(atomList[i], RpClumpGetFrame(hdr->clump));
                 }
-
                 RwFree(atomList);
             }
-
             RpClumpDestroy(clump);
         }
     }
@@ -189,21 +181,21 @@ void xJSP_MultiStreamRead(void* data, U32 size, xJSPHeader** jsp)
 
 void xJSP_Destroy(xJSPHeader* jsp)
 {
-    if (globals.sceneCur->env->geom->jsp == jsp && globals.sceneCur->env->geom->world)
-    {
-        RpWorldDestroy(globals.sceneCur->env->geom->world);
-        globals.sceneCur->env->geom->world = NULL;
+    if (globals.sceneCur->env->geom->jsp == jsp) {
+        if (globals.sceneCur->env->geom->world) {
+            RpWorldDestroy(globals.sceneCur->env->geom->world);
+            globals.sceneCur->env->geom->world = NULL;
+        }
     }
 
     RpClumpDestroy(jsp->clump);
     RwFree(jsp->colltree);
 
-    U32* tp = (U32*)((xJSPHeaderGC*)jsp)->stripVecList;
-    U32 test = *(tp - sizeof(U32));
+    U32* tp = (U32*)((xJSPHeaderEx*)jsp)->stripVecList;
+    U32 test = *(tp - 4);
     RwMemNative32(&test, sizeof(U32));
-    if (test != 0xBEEF03)
-    {
-        RwFree(((xJSPHeaderGC*)jsp)->stripVecList);
+    if (test != rwID_HI_STRIPVECS) {
+        RwFree(((xJSPHeaderEx*)jsp)->stripVecList);
     }
 
     RwFree(jsp);

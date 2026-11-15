@@ -3,17 +3,8 @@
 
 #include "xClumpColl.h"
 
-#include <rpworld.h>
 #include <rwcore.h>
-
-#include <types.h>
-
-struct __rwMark
-{
-    U32 type;
-    U32 length;
-    U32 libraryID;
-};
+#include <rpworld.h>
 
 struct xJSPNodeInfo
 {
@@ -29,12 +20,6 @@ struct xJSPHeader
     RpClump* clump;
     xClumpCollBSPTree* colltree;
     xJSPNodeInfo* jspNodeList;
-};
-
-struct xJSPHeaderGC : xJSPHeader
-{
-    U32 stripVecCount;
-    RwV3d* stripVecList;
 };
 
 void xJSP_MultiStreamRead(void* data, U32 size, xJSPHeader** jsp);
