@@ -2,45 +2,53 @@
 #define XHUDMETER_H
 
 #include "xHud.h"
-#include "xHudAsset.h"
 #include "xSnd.h"
 
-namespace xhud
+namespace xhud {
+
+struct meter_asset;
+
+class meter_widget : public widget
 {
-    struct meter_widget : widget
+public:
+    const meter_asset& res;
+    F32 value;
+    F32 min_value;
+    F32 max_value;
+    F32 end_value;
+    F32 value_vel;
+    F32 value_accel;
+    F32 ping_delay;
+    F32 pitch;
+
+    meter_widget(const meter_asset& a);
+
+    // UNUSED: needed to match (speculative code)
+    ~meter_widget() {}
+
+    void destruct();
+
+    virtual U32 type() const;
+    virtual bool is(U32 id) const;
+
+    virtual void update(F32 dt)
     {
-        meter_asset& res;
-        F32 value;
-        F32 min_value;
-        F32 max_value;
-        F32 end_value;
-        F32 value_vel;
-        F32 value_accel;
-        F32 ping_delay;
-        F32 pitch;
-        sound_queue<4> pings;
+        updater(dt);
+    }
 
-        meter_widget(const meter_asset& asset);
-        // UNUSED: needed to match (speculative code)
-        ~meter_widget() {}
+    void set_value(F32 v);
+    void set_value_immediate(F32 v);
+    void updater(F32 dt);
 
-        void set_value(F32 v);
-        void set_value_immediate(F32 v);
-        void destruct();
-        U32 type() const;
-        bool is(U32 id) const;
-        void updater(F32 dt);
+    bool changing() const
+    {
+        return value != end_value;
+    }
 
-        void update(F32 dt)
-        {
-            updater(dt);
-        }
+protected:
+    sound_queue<4> pings;
+};
 
-        U32 changing() const
-        {
-            return (value == end_value) ^ 1;
-        }
-    };
-} // namespace xhud
+}
 
 #endif

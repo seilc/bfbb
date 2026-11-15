@@ -2,8 +2,29 @@
 #include "math.h"
 #include "fdlibm.h"
 
-// Generated via math_api.h
-// int __fpclassifyf(float x);
+int __fpclassifyf(f32 x)
+{
+    switch ((*(s32*)&x) & 0x7f800000)
+    {
+    case 0x7f800000:
+    {
+        if ((*(s32*)&x) & 0x007fffff)
+            return 1;
+        else
+            return 2;
+        break;
+    }
+    case 0:
+    {
+        if ((*(s32*)&x) & 0x007fffff)
+            return 5;
+        else
+            return 3;
+        break;
+    }
+    }
+    return 4;
+}
 
 // Generated via math_api.h
 // int __fpclassifyd(double x);

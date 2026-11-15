@@ -73,6 +73,8 @@ namespace std
 #endif
 
     inline float fmodf(float x, float y) { return fmod(x, y); }
+
+    inline float powf(float x, float y) { return pow(x, y); }
 } // namespace std
 
 #endif

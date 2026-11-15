@@ -82,26 +82,40 @@ struct _xSndDelayed
     U32 pad0;
 };
 
-template <S32 N> struct sound_queue
+template <S32 SIZE>
+class sound_queue
 {
-    U32 _playing[N + 1];
-    S32 head;
-    S32 tail;
+public:
+    sound_queue() { head = 0; tail = 0; }
 
-    sound_queue()
+    void play(U32 id, F32 vol, F32 pitch, U32 priority, U32 flags, U32 parentID, sound_category category)
     {
-        head = 0;
-        tail = 0;
+        U32 handle = xSndPlay(id, vol, pitch, priority, flags, parentID, category, 0.0f);
+        push(handle);
     }
 
-    void play(U32 id, F32 vol, F32 pitch, U32 priority, U32 flags, U32 parentID,
-              sound_category snd_category);
-    void push(U32 id);
+    void push(U32 handle)
+    {
+        _playing[tail] = handle;
+
+        S32 begin = head;
+        S32 end = tail+1;
+        if (end <= begin) end += SIZE+1;
+
+        S32 len = end - begin;
+        if (len > SIZE) {
+            xSndStop(_playing[begin]);
+            begin++;
+            head = begin % (SIZE+1);
+        }
+
+        tail = end % (SIZE+1);
+    }
 
     void pop()
     {
         xSndStop(_playing[head]);
-        head = (head + 1) % (N + 1);
+        head = (head + 1) % (SIZE + 1);
     }
     S32 size() const
     {
@@ -109,7 +123,7 @@ template <S32 N> struct sound_queue
         {
             return tail - head;
         }
-        return tail + (N + 1) - head;
+        return tail + (SIZE + 1) - head;
     }
     void clear()
     {
@@ -123,7 +137,7 @@ template <S32 N> struct sound_queue
         S32 i = tail - index - 1;
         if (i < 0)
         {
-            i += (N + 1);
+            i += (SIZE + 1);
         }
         return _playing[i];
     }
@@ -160,6 +174,11 @@ template <S32 N> struct sound_queue
             return false;
         }
     }
+
+private:
+    U32 _playing[SIZE+1];
+    S32 head;
+    S32 tail;
 };
 
 enum sound_effect

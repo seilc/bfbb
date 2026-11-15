@@ -75,7 +75,11 @@ void xsqrtfast(F32& dst, F32 num);
 
 F32 xrmod(F32 ang);
 
-template <class T> T range_limit(T v, T minv, T maxv);
+template <class T>
+T range_limit(T v, T minv, T maxv)
+{
+    return v <= minv ? minv : (v >= maxv ? maxv : v);
+}
 
 #include "xMathInlines.h"
 
