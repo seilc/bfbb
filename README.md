@@ -31,13 +31,15 @@ LLM, then reviewed and checked against the original binary. Matching code is byt
 names, types and source structure beyond what the binary and the PS2 build's debug info prove may be guesses. The code
 inherited from bfbbdecomp/bfbb was written by its contributors.
 
-It builds the following DOL:
+It builds the following DOLs:
 
-main.dol: `sha1: 306526d90b48e99894c3138f5fc8f2716d9fecf6`
+- `GQPE78` main.dol: `sha1: 306526d90b48e99894c3138f5fc8f2716d9fecf6`
+- `GQPP78` main.dol: `sha1: 6da9022f06bfb62a203017ec38046ba2566dc0cf`
 
 Supported versions:
 
 - `GQPE78` - Battle for Bikini Bottom (USA), retail `main.dol`
+- `GQPP78` - Battle for Bikini Bottom (Europe), retail `main.dol`
 
 The game code builds with `GC/2.0p3`, our model of the CodeWarrior version it needs (not in decomp.dev's compiler
 set), built from [our fork](https://github.com/seilc/mweppc) of the [doldecomp/mweppc](https://github.com/doldecomp/mweppc)
@@ -90,7 +92,7 @@ sudo xattr -rd com.apple.quarantine '/Applications/Wine Crossover.app'
   git clone https://github.com/seilc/bfbb.git
   ```
 
-- Using [Dolphin Emulator](https://dolphin-emu.org/), extract your game to `orig/GQPE78`.
+- Using [Dolphin Emulator](https://dolphin-emu.org/), extract your game to `orig/GQPE78` (`orig/GQPP78` for Europe).
   ![](assets/dolphin-extract.png)
   - To save space, the only necessary files are the following. Any others can be deleted.
     - `sys/main.dol`

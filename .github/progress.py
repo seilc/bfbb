@@ -19,7 +19,7 @@ import sys
 from pathlib import Path
 
 GAME = "BFBB"
-VERSIONS = ["GQPE78"]
+VERSIONS = ["GQPE78", "GQPP78"]
 USERNAME = "Robo-Squidward"
 CATEGORY = "game"
 ABBREVS = {"DEBUG": "D", "RELEASE": "R", "MASTERDEBUG": "MD", "MASTER": "M"}

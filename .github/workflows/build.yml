@@ -22,7 +22,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        version: [GQPE78]
+        version: [GQPE78, GQPP78]
 
     steps:
       - name: Checkout

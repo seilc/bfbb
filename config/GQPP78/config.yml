@@ -1,0 +1,8 @@
+# See config.example.yml for documentation.
+object: orig/GQPP78/sys/main.dol
+hash: 6da9022f06bfb62a203017ec38046ba2566dc0cf
+symbols: config/GQPP78/symbols.txt
+splits: config/GQPP78/splits.txt
+symbols_known: true
+fill_gaps: false
+ldscript_template: config/GQPP78/ldscript.tpl

@@ -30,6 +30,7 @@ from tools.project import (
 DEFAULT_VERSION = 0
 VERSIONS = [
     "GQPE78",  # 0
+    "GQPP78",  # 1
 ]
 
 parser = argparse.ArgumentParser()
@@ -501,7 +502,7 @@ config.libs = [
             Object(Matching, "SB/Game/zEnv.cpp"),
             Object(Matching, "SB/Game/zEvent.cpp"),
             Object(Matching, "SB/Game/zFeet.cpp"),
-            Object(Matching, "SB/Game/zFMV.cpp"),
+            Object(MatchingFor("GQPE78"), "SB/Game/zFMV.cpp"),
             Object(NonMatching, "SB/Game/zFX.cpp", extra_cflags=["-sym on"]),
             Object(NonMatching, "SB/Game/zGame.cpp"),
             Object(Equivalent, "SB/Game/zGameExtras.cpp"),
@@ -539,7 +540,7 @@ config.libs = [
             Object(NonMatching, "SB/Core/x/iCamera.cpp"),
             Object(NonMatching, "SB/Core/gc/iCollide.cpp", extra_cflags=["-sym on"]),
             Object(Matching, "SB/Core/gc/iCollideFast.cpp"),
-            Object(Matching, "SB/Core/gc/iDraw.cpp"),
+            Object(MatchingFor("GQPE78"), "SB/Core/gc/iDraw.cpp"),
             Object(Equivalent, "SB/Core/gc/iEnv.cpp"),
             Object(NonMatching, "SB/Core/gc/iFile.cpp"),
             Object(Equivalent, "SB/Core/gc/iFMV.cpp"),
@@ -565,7 +566,7 @@ config.libs = [
             Object(NonMatching, "SB/Game/zNPCGoalRobo.cpp", extra_cflags=["-sym on"]),
             Object(Matching, "SB/Game/zNPCGoalTiki.cpp", extra_cflags=["-sym on"]),
             Object(NonMatching, "SB/Game/zNPCMessenger.cpp", extra_cflags=["-sym on"]),
-            Object(Matching, "SB/Game/zNPCMgr.cpp", extra_cflags=["-sym on"]),
+            Object(MatchingFor("GQPE78"), "SB/Game/zNPCMgr.cpp", extra_cflags=["-sym on"]),
             Object(Matching, "SB/Game/zNPCTypes.cpp"),
             Object(NonMatching, "SB/Game/zNPCTypeCommon.cpp", extra_cflags=["-sym on"]),
             Object(NonMatching, "SB/Game/zNPCTypeRobot.cpp"),
