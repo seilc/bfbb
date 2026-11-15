@@ -510,7 +510,7 @@ void zNPCMgr::SceneReset()
     zNPCVillager_SceneReset();
     zNPCMsg_SceneReset();
     xBehaveMgr_SceneReset();
-    BackdoorUpdateAllNPCsOnce(globals.sceneCur, 1.0f / 60.0f);
+    BackdoorUpdateAllNPCsOnce(globals.sceneCur, 1.0f / FRAMES_PER_SEC);
 }
 
 void zNPCMgr::ScenePostInit()
@@ -625,7 +625,7 @@ void zNPCMgr::BackdoorUpdateAllNPCsOnce(xScene* xscn, F32 dt)
 
         if (npc->baseFlags & 0x40 && npc->update != NULL)
         {
-            npc->update(npc, xscn, 1.0f / 60);
+            npc->update(npc, xscn, 1.0f / FRAMES_PER_SEC);
         }
     }
 }

@@ -567,7 +567,7 @@ config.libs = [
             Object(NonMatching, "SB/Game/zNPCGoalRobo.cpp", extra_cflags=["-sym on"]),
             Object(Matching, "SB/Game/zNPCGoalTiki.cpp", extra_cflags=["-sym on"]),
             Object(NonMatching, "SB/Game/zNPCMessenger.cpp", extra_cflags=["-sym on"]),
-            Object(MatchingFor("GQPE78"), "SB/Game/zNPCMgr.cpp", extra_cflags=["-sym on"]),
+            Object(Matching, "SB/Game/zNPCMgr.cpp", extra_cflags=["-sym on"]),
             Object(Matching, "SB/Game/zNPCTypes.cpp"),
             Object(NonMatching, "SB/Game/zNPCTypeCommon.cpp", extra_cflags=["-sym on"]),
             Object(NonMatching, "SB/Game/zNPCTypeRobot.cpp"),
