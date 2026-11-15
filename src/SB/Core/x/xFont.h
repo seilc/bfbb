@@ -41,7 +41,7 @@ struct xfont
     void stop_render() const;
     void irender(const char* text, F32 x, F32 y) const;
     void irender(const char* text, size_t text_size, F32 x, F32 y) const;
-    void render(const char* text, F32 x, F32 y) const;
+    void render(const char* text, F32 x, F32 y) const { start_render(); irender(text, x, y); stop_render(); }
 };
 
 struct xtextbox

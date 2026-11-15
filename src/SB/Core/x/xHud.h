@@ -49,6 +49,19 @@ namespace xhud
         F32 a;
     };
 
+    struct font_context
+    {
+        U32 id;
+        S32 justify;
+        F32 w;
+        F32 h;
+        F32 space;
+        F32 drop_x;
+        F32 drop_y;
+        color32u c;
+        color32u drop_c;
+    };
+
     struct asset : xDynAsset
     {
         xVec3 loc;

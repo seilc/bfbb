@@ -1,185 +1,96 @@
 #include "xCommon.h"
 #include "xHudFontMeter.h"
 
-#include "xMath2.h"
+#include "xHudAsset.h"
 
-#include <new>
 #include <stdio.h>
-#include <types.h>
+#include <new>
 
-void xhud::font_meter_widget::load(xBase& data, xDynAsset& asset, u32 size_t)
+namespace xhud {
+
+void font_meter_widget::load(xBase& data, xDynAsset& asset, size_t)
 {
-    // Stubbed out for now for causing build failure. 100% match locally though if method redefined to be nonstatic.
-    // widget::init_base((xBase&)*this, *(xBaseAsset*)&data, sizeof(xhud::font_meter_widget) + 0x10);
-    // new (&this->rc.size)
-    //     xhud::font_meter_widget(*(xhud::font_meter_asset*)&data); // TODO: proper size value
+    init_base(data, asset, sizeof(widget_chunk));
+
+    widget_chunk& wc = (widget_chunk&)data;
+    new (&wc.w) font_meter_widget((font_meter_asset&)asset);
 }
 
-xhud::font_meter_widget::font_meter_widget(const xhud::font_meter_asset& init) : meter_widget(init)
+font_meter_widget::font_meter_widget(const font_meter_asset& a)
+    : meter_widget(a)
+    , font(a.font)
+    , start_font(a.font)
 {
-    basic_rect<F32> screen_bounds;
-
-    this->font.id = init.font.id;
-    this->font.justify = init.font.justify;
-    this->start_font.id = init.font.id;
-    this->start_font.justify = init.font.justify;
-
-    // No assembly for this operator but bytewise is too many instructions
-    this->font.c = init.font.c;
-    this->start_font.c = init.font.c;
-    this->font.drop_c = init.font.drop_c;
-    this->start_font.drop_c = init.font.drop_c;
-
-    this->last_value = ((S32)(this->value)) - 20;
-    this->xf.id = 0;
-    this->xf.width = this->font.w;
-    this->xf.height = this->font.h;
-    this->xf.space = this->font.space;
-
-    this->xf.color = this->font.c;
-    this->xf.clip = screen_bounds;
+    last_value = (S32)value - 20;
+    xf.id = 0;
+    xf.width = font.w;
+    xf.height = font.h;
+    xf.space = font.space;
+    xf.color = (iColor_tag&)font.c;
+    xf.clip = screen_bounds;
 }
 
-void xhud::font_meter_widget::destruct()
+void font_meter_widget::destruct() { meter_widget::destruct(); }
+
+void font_meter_widget::destroy()
 {
-    xhud::meter_widget::destruct();
+    destruct();
 }
 
-void xhud::font_meter_widget::destroy()
+U32 font_meter_widget::type() const
 {
-    this->destruct();
-}
-
-U32 xhud::font_meter_widget::type()
-{
-    static S8 init;
-    static U32 myid;
-
-    if (init == 0)
-    {
-        myid = xStrHash(((xhud::font_meter_asset*)this)->type_name());
-        init = 1;
-    }
+    static U32 myid = xStrHash(font_meter_asset::type_name());
     return myid;
 }
 
-U8 xhud::font_meter_widget::is(U32 id)
+bool font_meter_widget::is(U32 id) const
 {
-    U8 val = 0;
-
-    if ((id == this->type()) || (((xhud::meter_widget*)this->is(id)) != 0))
-    {
-        val = 1;
-    }
-    return val;
+    return id == font_meter_widget::type() || meter_widget::is(id);
 }
 
-void xhud::font_meter_widget::update(F32 dt)
-
+void font_meter_widget::update(F32 dt)
 {
-    char* format_text[3];
-    format_text[0] = 0;
+    updater(dt);
 
-    F32 a;
-    S32 new_value;
-    basic_rect<F32> bounds;
+    xf.id = font.id;
+    xf.space = font.space;
+    xf.width = font.w = rc.size.x;
+    xf.height = font.h = rc.size.y;
 
-    U8 flag_1;
-    U8 flag_2;
+    F32 a = 0.5f + rc.a * start_font.c.a;
+    font.c.a = ((a <= 0) ? 0 : ((a >= 255) ? 255 : (U8)a));
 
-    this->updater(dt);
-    this->xf.id = this->font.id;
-    this->xf.space = this->font.space;
-    a = this->rc.size.x;
-    this->font.w = a;
-    this->xf.width = a;
-    a = this->rc.size.y;
-    this->font.h = a;
-    this->xf.height = a;
+    a = 0.5f + rc.a * start_font.drop_c.a;
+    font.drop_c.a = ((a <= 0) ? 0 : ((a >= 255) ? 255 : (U8)a));
 
-    a = this->rc.a * (F32)this->start_font.c.a + 0.5;
-    if (a <= 0.0)
-    {
-        flag_1 = 0;
-    }
-    else if (a >= 255.0)
-    {
-        flag_1 = 255;
-    }
-    else if (a < 2.1474836e+09)
-    {
-        flag_1 = (U8)(S32)a;
-    }
-    else
-    {
-        flag_1 = (U8)(S32)(a - 2.1474836e+09);
-    }
-    this->font.c.a = flag_1;
+    S32 new_value = 0.5f + value;
+    if (last_value != new_value) {
+        last_value = new_value;
 
-    a = this->rc.a * (F32)this->start_font.drop_c.a + 0.5;
-    if (a <= 0.0)
-    {
-        flag_1 = 0;
-    }
-    else if (a >= 255.0)
-    {
-        flag_1 = 255;
-    }
-    else if (a < 2.1474836e+09)
-    {
-        flag_1 = (U8)(S32)a;
-    }
-    else
-    {
-        flag_1 = (U8)(S32)(a - 2.1474836e+09);
-    }
-    this->font.drop_c.a = flag_1;
+        static char* format_text[] = { "%d", "%d/%d", "%d of %d" };
+        const font_meter_asset& fma = *(font_meter_asset*)this->a;
+        sprintf(buffer, format_text[(max_value < min_value) ? (U8)0 : fma.counter_mode], new_value,
+                (S32)(0.5f + max_value));
 
-    new_value = (S32)(this->value + 0.5);
-    if (this->last_value != new_value)
-    {
-        this->last_value = new_value;
-        a = this->max_value;
-        if (a < this->min_value)
-        {
-            flag_2 = 0;
-        }
-        else
-        {
-            flag_2 = ((font_meter_asset*)(this->a))->counter_mode;
-        }
-        sprintf(this->buffer, format_text[flag_2], new_value, (S32)(a + 0.5));
-        bounds = this->xf.bounds(this->buffer);
-        this->offset.x = -bounds.x;
-        this->offset.y = -bounds.y;
+        basic_rect<F32> bounds = xf.bounds(buffer);
+        offset.x = -bounds.x;
+        offset.y = -bounds.y;
     }
-    return;
 }
 
-void xhud::font_meter_widget::render()
-
+void font_meter_widget::render()
 {
-    F32 x;
-    F32 temp_x;
-    F32 y;
+    F32 x = offset.x + rc.loc.x;
+    F32 y = offset.y + rc.loc.y;
 
-    temp_x = this->offset.x + this->rc.loc.x;
-    y = this->offset.y + this->rc.loc.y;
-    if (this->font.drop_c.a != 0)
-    {
-        this->xf.color = this->font.drop_c;
-        x = temp_x + this->font.drop_x;
-        this->xf.render(this->buffer, x, y + this->font.drop_y);
+    if (font.drop_c.a > 0) {
+        xf.color = (iColor_tag&)font.drop_c;
+        xf.render(buffer, x + font.drop_x, y + font.drop_y);
     }
-    if (this->font.c.a != 0)
-    {
-        this->xf.color = this->font.c;
-        this->xf.render(this->buffer, temp_x, y);
+    if (font.c.a > 0) {
+        xf.color = (iColor_tag&)font.c;
+        xf.render(buffer, x, y);
     }
-    return;
 }
 
-char* xhud::font_meter_asset::type_name()
-{
-    return "hud:meter:font";
 }

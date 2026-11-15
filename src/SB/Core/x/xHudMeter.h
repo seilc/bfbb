@@ -2,31 +2,11 @@
 #define XHUDMETER_H
 
 #include "xHud.h"
+#include "xHudAsset.h"
 #include "xSnd.h"
 
 namespace xhud
 {
-    struct meter_asset : asset
-    {
-        F32 start_value;
-        F32 min_value;
-        F32 max_value;
-        F32 increment_time;
-        F32 decrement_time;
-        struct _class_0
-        {
-            U32 start_increment;
-            U32 increment;
-            U32 start_decrement;
-            U32 decrement;
-        } sound;
-
-        static const char* type_name()
-        {
-            return "hud:meter";
-        }
-    };
-
     struct meter_widget : widget
     {
         meter_asset& res;
