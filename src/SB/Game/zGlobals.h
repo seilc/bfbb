@@ -320,7 +320,6 @@ struct zGlobals : xGlobals
 };
 
 extern zGlobals globals;
-extern xGlobals* xglobals;
 extern zGlobalSettings* sglobals;
 
 #endif

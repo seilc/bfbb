@@ -8,6 +8,7 @@
 #include "zScene.h"
 #include "zTextBox.h"
 
+#include "iParMgr.h"
 #include "xDebug.h"
 #include "xDraw.h"
 #include "xEnt.h"
@@ -16,6 +17,7 @@
 #include "xMath3.h"
 #include "xMathInlines.h"
 #include "xSnd.h"
+#include "xstransvc.h"
 
 #include <rpworld.h>
 #include <rwcore.h>

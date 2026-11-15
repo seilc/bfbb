@@ -2,6 +2,7 @@
 #include "zLightning.h"
 
 #include "zGlobals.h"
+#include "zParEmitter.h"
 
 #include "xDebug.h"
 #include "xParEmitter.h"

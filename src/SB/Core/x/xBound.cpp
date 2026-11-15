@@ -476,15 +476,6 @@ xVec3& xVec3::operator-=(const xVec3& v)
     return *this;
 }
 
-xVec3& xVec3::operator=(const xVec3& v)
-{
-    this->x = v.x;
-    this->y = v.y;
-    this->z = v.z;
-
-    return *this;
-}
-
 void xDrawBox(const xBox*)
 {
 }

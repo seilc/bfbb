@@ -6,6 +6,8 @@
 #include "xVec3.h"
 #include "xVec3Inlines.h"
 
+#include <string.h>
+
 // Size: 0x30
 struct xMat3x3
 {
@@ -174,7 +176,6 @@ void xQuatAdd(xQuat* q, const xQuat* a, const xQuat* b);
 void xQuatCopy(xQuat*, const xQuat*);
 void xQuatFlip(xQuat* o1, const xQuat* o2);
 F32 xQuatDot(const xQuat* a, const xQuat* b);
-void xMat3x3Copy(xMat3x3* o, const xMat3x3* m); // TODO: These functions should be inline
 void xMat4x3Copy(xMat4x3* o, const xMat4x3* m);
 void xMat4x3Toworld(xVec3* o, const xMat4x3* m, const xVec3* v);
 void xMat3x3MulRotC(xMat3x3* o, xMat3x3* m, F32 _x, F32 _y, F32 _z, F32 t);
@@ -188,8 +189,17 @@ F32 xMat3x3LookVec3(xMat3x3& m, const xVec3& at);
 void xMat3x3Scale(xMat3x3* m, const xVec3* s);
 void xBoxFromLine(xBox& box, const xLine3& line);
 void xBoxFromRay(xBox& box, const xRay3& ray);
-void xMat3x3Identity(xMat3x3* matrix); // TODO: These functions should be inline
 void xMat3x3SMul(xMat3x3*, const xMat3x3*, F32);
+
+inline void xMat3x3Copy(xMat3x3* o, const xMat3x3* m)
+{
+    memcpy(o, m, sizeof(xMat3x3));
+}
+
+inline void xMat3x3Identity(xMat3x3* m)
+{
+    xMat3x3Copy(m, &g_I3);
+}
 
 inline void xRotCopy(xRot* o, const xRot* r)
 {

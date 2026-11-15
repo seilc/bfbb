@@ -110,6 +110,10 @@ void xMemPoolFree(xMemPool* pool, void* data);
 
 #define xMEMALLOC(size, align) xMemAlloc(gActiveHeap, (size), (align))
 
+#define xMEMPUSHTEMP(amt) xMemPushTemp((amt))
+
+#define xMEMPOPTEMP(pointer) xMemPopTemp((pointer))
+
 #define xMemGrowAllocSize(size) xMemGrowAlloc(gActiveHeap, size)
 #define xMemAllocSize(size) xMemAlloc(gActiveHeap, size, 0)
 #define xMemAllocSizeAlign(size, align) xMemAlloc(gActiveHeap, size, align)

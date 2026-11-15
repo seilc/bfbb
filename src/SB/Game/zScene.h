@@ -31,7 +31,7 @@ struct zScene : xScene
     _zEnv* zen;
 };
 
-extern _tagClimate gClimate;
+extern Climate gClimate;
 extern _zEnv* gCurEnv;
 extern U32 gTransitionSceneID;
 extern F32 gSceneUpdateTime;

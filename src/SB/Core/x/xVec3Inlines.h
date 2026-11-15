@@ -3,13 +3,17 @@
 
 #include "xVec3.h"
 
+inline void xVec3Init(xVec3* v, F32 _x, F32 _y, F32 _z)
+{
+    v->x = _x, v->y = _y, v->z = _z;
+}
+
 void xVec3Sub(xVec3* o, const xVec3* a, const xVec3* b);
 void xVec3Cross(xVec3* o, const xVec3* a, const xVec3* b);
 void xVec3Inv(xVec3* o, const xVec3* v);
 F32 xVec3Length(const xVec3* v);
 void xVec3SMul(xVec3* o, const xVec3* v, F32 s);
 void xVec3Add(xVec3* o, const xVec3* a, const xVec3* b);
-void xVec3Init(xVec3* v, F32 _x, F32 _y, F32 _z);
 void xVec3AddTo(xVec3* o, const xVec3* v);
 void xVec3Lerp(xVec3* o, const xVec3* a, const xVec3* b, F32 t);
 void xVec3ScaleC(xVec3* o, const xVec3* v, F32 x, F32 y, F32 z);
