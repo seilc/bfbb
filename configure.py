@@ -319,7 +319,6 @@ cflags_bfbb = [
     "-str reuse,pool,readonly",
     "-use_lmw_stmw on",
     "-inline off",
-    "-gccinc",
     "-i include/inline",
     "-i include/rwsdk",
     "-i src/SB/Core/gc",
