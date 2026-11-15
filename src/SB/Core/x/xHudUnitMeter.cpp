@@ -1,159 +1,118 @@
 #include "xCommon.h"
 #include "xHudUnitMeter.h"
 
-#include "xDebug.h"
-#include "xMathInlines.h"
+#include "xMath.h"
 #include "xString.h"
 
 #include <new>
-#include <types.h>
 
-namespace xhud
-{
-    namespace
-    {
-        F32 tweak_anim_time_delta = 0.1;
-    }
-} // namespace xhud
+namespace xhud {
 
-void xhud::unit_meter_widget::load(xBase& data, xDynAsset& asset, size_t arg2)
-{
-    init_base(data, asset, sizeof(xBase) + sizeof(unit_meter_widget));
-    unit_meter_widget* widget = (unit_meter_widget*)(&data + 1);
-    new (widget) unit_meter_widget((unit_meter_asset&)asset);
+namespace {
+
+F32 tweak_anim_time_delta = 0.1f;
+
 }
 
-xhud::unit_meter_widget::unit_meter_widget(const xhud::unit_meter_asset& a) : meter_widget(a)
+void unit_meter_widget::load(xBase& data, xDynAsset& asset, size_t)
 {
-    S32 i, j;
-    // for (i = 0; i < 18; i++)
-    // {
-    res.id = a.id;
-    res.baseType = a.baseType;
-    // }
+    init_base(data, asset, sizeof(widget_chunk));
+    widget_chunk& wc = (widget_chunk&)data;
+    new (&wc.w) unit_meter_widget((unit_meter_asset&)asset);
+}
 
-    anim_time = 0.0f;
-
-    for (i = 0; i < 2; i++)
-    {
-        for (j = 0; j < 6; j++)
-        {
-            xModelInstance* m = load_model(res.model[i].id);
+unit_meter_widget::unit_meter_widget(const unit_meter_asset& a)
+    : meter_widget(a)
+    , res(a)
+    , anim_time(0.0f)
+{
+    for (S32 i = 0; i < 2; i++) {
+        for (S32 j = 0; j < 6; j++) {
+            model[j][i] = load_model(res.model[i].id);
         }
     }
 
     static bool registered = false;
-    if (!registered)
-    {
+    if (!registered) {
         registered = true;
-        xDebugAddTweak("Temp|HUD Unit Anim Delta", &tweak_anim_time_delta, 0.0f, 10.0f, NULL, NULL,
-                       0);
+        xTWEAK("Temp|HUD Unit Anim Delta", &tweak_anim_time_delta, 0.0f, 10.0f, NULL, NULL, 0);
     }
 }
 
-void xhud::unit_meter_widget::destruct()
+void unit_meter_widget::destruct()
 {
     meter_widget::destruct();
 }
 
-void xhud::unit_meter_widget::destroy()
+void unit_meter_widget::destroy()
 {
-    this->destruct();
+    destruct();
 }
 
-U32 xhud::unit_meter_widget::type() const
+U32 unit_meter_widget::type() const
 {
-    static U32 myid = xStrHash(((unit_meter_asset*)a)->type_name());
+    static U32 myid = xStrHash(unit_meter_asset::type_name());
     return myid;
 }
 
-bool xhud::unit_meter_widget::is(U32 id) const
+bool unit_meter_widget::is(U32 id) const
 {
-    bool isType = false;
-    if (unit_meter_widget::type() == id || meter_widget::is(id))
-    {
-        isType = true;
-    }
-
-    return isType;
+    return id == unit_meter_widget::type() || meter_widget::is(id);
 }
 
-void xhud::unit_meter_widget::setup()
+void unit_meter_widget::setup()
 {
-    widget::presetup();
+    presetup();
 }
 
-void xhud::unit_meter_widget::update(F32 dt)
+void unit_meter_widget::update(F32 dt)
 {
     meter_widget::updater(dt);
-
-    if (!widget::visible() || this->rc.a <= (5.0f / 255.0f))
-    {
-        return;
-    }
-
+    if (!visible() || rc.a <= 0.5f/255.0f) return;
     anim_time += dt;
-
     S32 units = 0.5f + max_value;
-    if (units > 6)
-    {
-        units = 6;
-    }
+    if (units > 6) units = 6;
 
-    for (S32 i = 0; i < units; i++)
-    {
-        S32 which = 0;
-        if ((res.fill_forward && value >= i + 1) || (!res.fill_forward && value >= units - i))
-        {
+    for (S32 i = 0; i < units; i++) {
+        S32 which = 0; if ((res.fill_forward && value >= i + 1) ||
+            (!res.fill_forward && value >= units - i))
             which = 1;
-        }
-
         xModelInstance* m = model[i][which];
-        if (m != NULL && m->Anim != NULL && !(m->Anim->Single->State->Data->Duration <= 0.0f))
-        {
-            // TODO: Float ops aren't quite right
-            F32 duration = i * 0.1f + anim_time;
-            if (duration > m->Anim->Single->State->Data->Duration)
-            {
-                duration = xfmod(duration, m->Anim->Single->State->Data->Duration);
-            }
+        if (!m || !m->Anim) continue;
 
-            m->Anim->Single->Time = duration;
-            xModelEval(m);
-        }
+        F32 duration = m->Anim->Single->State->Data->Duration;
+        if (duration <= 0.0f) continue;
+        F32 time = i * tweak_anim_time_delta + anim_time;
+        if (time > duration) time = xfmod(time, duration);
+        m->Anim->Single->Time = time;
+
+        xModelEval(m);
     }
 }
 
-void xhud::unit_meter_widget::render()
+void unit_meter_widget::render()
 {
-    render_context unitrc = this->rc;
+    render_context unitrc = rc;
 
     S32 units = 0.5f + max_value;
-    if (units > 6)
-    {
-        units = 6;
-    }
-
-    for (S32 i = 0; i < units; i++)
-    {
-        S32 which = 0;
-        if ((res.fill_forward && value >= i + 1) || (!res.fill_forward && value >= units - i))
-        {
+    if (units > 6) units = 6;
+    for (S32 i = 0; i < units; i++) {
+        S32 which = 0; if ((res.fill_forward && value >= i + 1) ||
+            (!res.fill_forward && value >= units - i))
             which = 1;
-        }
 
-        if (model[i][which] == NULL)
-        {
-            continue;
-        }
+        if (!model[i][which]) continue;
 
-        unitrc.loc.x = res.offset.x * i + rc.loc.x + res.model[which].loc.x;
-        unitrc.loc.y = res.offset.y * i + rc.loc.y + res.model[which].loc.y;
-        unitrc.loc.z = res.offset.z * i + rc.loc.z + res.model[which].loc.z;
+        unitrc.loc.x = rc.loc.x + res.model[which].loc.x + res.offset.x * i;
+        unitrc.loc.y = rc.loc.y + res.model[which].loc.y + res.offset.y * i;
+        unitrc.loc.z = rc.loc.z + res.model[which].loc.z + res.offset.z * i;
+
         unitrc.size.x = rc.size.x * res.model[which].size.x;
         unitrc.size.y = rc.size.y * res.model[which].size.y;
         unitrc.size.z = rc.size.z * res.model[which].size.z;
 
         render_model(*model[i][which], unitrc);
     }
+}
+
 }

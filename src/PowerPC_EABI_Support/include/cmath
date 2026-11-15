@@ -71,6 +71,8 @@ namespace std
         return (float)floor((double)x);
     }
 #endif
+
+    inline float fmodf(float x, float y) { return fmod(x, y); }
 } // namespace std
 
 #endif

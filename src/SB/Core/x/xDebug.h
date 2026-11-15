@@ -131,4 +131,6 @@ inline void xDebugAddSelectTweak(const char*, U32*, const char**, const U32*, U3
 {
 }
 
+#define xTWEAK(name, v, vmin, vmax, cb, context, flags) xDebugAddTweak(name, v, vmin, vmax, cb, context, flags)
+
 #endif

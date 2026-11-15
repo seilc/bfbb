@@ -21,6 +21,8 @@ namespace xhud
         sound_queue<4> pings;
 
         meter_widget(const meter_asset& asset);
+        // UNUSED: needed to match (speculative code)
+        ~meter_widget() {}
 
         void set_value(F32 v);
         void set_value_immediate(F32 v);

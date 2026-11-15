@@ -1,1 +1,3 @@
 #include <dolphin.h>
+#include <cmath>
+#include "xMath.h"

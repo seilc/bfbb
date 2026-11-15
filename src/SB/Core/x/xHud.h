@@ -129,6 +129,8 @@ namespace xhud
         static S32 cb_dispatch(xBase*, xBase*, U32, const F32*, xBase*);
 
         widget(const asset& a);
+        // UNUSED: needed to match (speculative code)
+        ~widget() {}
         void destruct();
         void presetup();
         void updater(F32 dt);
