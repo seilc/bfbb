@@ -2,299 +2,369 @@
 #include "xCM.h"
 
 #include "xDebug.h"
+#include "xDebugTweak.h"
 #include "xEvent.h"
 #include "xFont.h"
-#include "xVec3.h"
+#include "xShadow.h"
 #include "xstransvc.h"
 
-#include <rwcore.h>
+const U32 CM_ALIGN_CENTER = 0;
+const U32 CM_ALIGN_LEFT = 1;
+const U32 CM_ALIGN_RIGHT = 2;
+const U32 CM_ALIGN_INNER = 3;
+const U32 CM_ALIGN_TEXTURE = 4;
 
-#include <stdio.h>
-#include <types.h>
-
-// TODO: find and move to appropriate header
-U32 Im2DRenderQuad(F32 x0, F32 y0, F32 x1, F32 y1, F32 z, F32 alpha, F32 uv_offset);
-
-void __deadstripped_rodata()
+struct sxy
 {
-    const xVec3 dead0 = {};
-    const xVec3 dead1 = {};
-    const xVec3 dead2 = {};
-    const xVec3 dead3 = {};
-    const U8 dead4[0x28] = {};
-    const U8 dead5[0x28] = {};
-    const U8 dead6[0x28] = {};
-    const U8 dead7[0x28] = {};
-    const U8 dead8[0x28] = {};
-    const U8 dead9[0x28] = {};
-    const U8 dead10[0x28] = {};
-}
+    F32 x;
+    F32 y;
+};
 
-static const basic_rect<F32> default_adjust = { 0.0f, 0.0f, 1.0f, 1.0f };
+struct fade
+{
+    F32 start;
+    F32 end;
+};
 
-F32 dtscale = 1.0f;
+struct xCreditsData
+{
+    U32 dummy;
+};
 
-static F32 credits_time = 10000.0f;
-static xCreditsData* credits_data;
-static U32 credits_parentID;
+struct xCMheader
+{
+    U32 magic;
+    U32 version;
+    U32 crdID;
+    U32 state;
+    F32 total_time;
+    U32 total_size;
+};
+
+struct xCMcredits
+{
+    U32 credits_size;
+    F32 len;
+    U32 flags;
+    sxy in;
+    sxy out;
+    F32 scroll_rate;
+    F32 lifetime;
+    fade fin;
+    fade fout;
+    U32 num_presets;
+};
+
+struct xCMtextbox
+{
+    U32 font;
+    iColor_tag color;
+    sxy char_size;
+    sxy char_spacing;
+    sxy box;
+};
+
+struct xCMtexture
+{
+    U32 assetID;
+    iColor_tag color;
+    F32 x;
+    F32 y;
+    F32 w;
+    F32 h;
+    RwTexture* texture;
+    U32 pad;
+};
+
+struct xCMpreset
+{
+    U16 num;
+    U16 align;
+    F32 delay;
+    F32 innerspace;
+    xCMtextbox box[2];
+};
+
+struct xCMhunk
+{
+    U32 hunk_size;
+    U32 preset;
+    F32 t0;
+    F32 t1;
+    const char* text1;
+    const char* text2;
+};
+
+struct xColorUnpack
+{
+    U8 r, g, b, a;
+};
 
 static void xCMprep(xCreditsData* data)
 {
-    /*
-        data seems to point to this general structure:
-        0x00 - xCMheader
-        0x18 - xCMcredits
-        0x50 - xCMpreset* presets_array[xCMcredits.num_presets]
-             - xCMhunk* hunk_array[?]
-    */
-
-    char* dp; // In the DWARF. Don't know what this is used for.
     xCMheader* hdr = (xCMheader*)data;
-
     if (hdr->magic != 0xBEEEEEEF)
-    {
         return;
-    }
 
-    xCMcredits* cp = (xCMcredits*)(&hdr[1]);
-    while ((S32)cp - (S32)data < hdr->total_size)
-    {
-        xCMpreset* pp = (xCMpreset*)(&cp[1]);
-        xCMhunk* hp = (xCMhunk*)(&pp[cp->num_presets]);
+    xCMhunk* hp;
+    char* dp;
+    xCMcredits* cp;
+    xCMpreset* pp;
 
-        for (; (S32)hp - (S32)cp < cp->credits_size; hp = (xCMhunk*)((S32)hp + hp->hunk_size))
-        {
-            switch (pp[hp->preset].align)
-            {
-            case 0:
-            case 1:
-            case 2:
-            case 3:
+    dp = (char*)(hdr + 1);
+    while (dp - (char*)data < hdr->total_size) {
+        cp = (xCMcredits*)dp;
+        pp = (xCMpreset*)(cp + 1);
+        hp = (xCMhunk*)(pp + cp->num_presets);
 
-                if (hdr->state == 0)
-                {
-                    if (hp->text1 != NULL)
-                    {
-                        hp->text1 -= (S32)data;
-                    }
-                    if (hp->text2 != NULL)
-                    {
-                        hp->text2 -= (S32)data;
-                    }
-                }
-                else
-                {
-                    if (hp->text1 != NULL)
-                    {
-                        hp->text1 += (S32)data;
-                    }
-                    if (hp->text2 != NULL)
-                    {
-                        hp->text2 += (S32)data;
-                    }
+        while ((char*)hp - (char*)cp < cp->credits_size) {
+            xCMpreset* preset = &pp[hp->preset];
+            switch (preset->align) {
+            case CM_ALIGN_CENTER:
+            case CM_ALIGN_LEFT:
+            case CM_ALIGN_RIGHT:
+            case CM_ALIGN_INNER:
+                if (hdr->state == 0) {
+                    if (hp->text1)
+                        hp->text1 = (const char*)((U32)hp->text1 - (U32)data);
+                    if (hp->text2)
+                        hp->text2 = (const char*)((U32)hp->text2 - (U32)data);
+                } else {
+                    if (hp->text1)
+                        hp->text1 = (const char*)((U32)hp->text1 + (U32)data);
+                    if (hp->text2)
+                        hp->text2 = (const char*)((U32)hp->text2 + (U32)data);
                 }
                 break;
             }
+
+            hp = (xCMhunk*)((char*)hp + hp->hunk_size);
         }
-        cp = (xCMcredits*)hp;
+
+        dp = (char*)hp;
     }
 
-    hdr->state = hdr->state == 0 ? 1 : 0;
+    hdr->state = (hdr->state == 0) ? 1 : 0;
 }
 
-static iColor_tag xCMcolor_scale(iColor_tag color, F32 t)
+static iColor_tag xCMcolor_scale(iColor_tag color, F32 scale)
 {
-    F64 r = (F64)color.r;
-    F64 g = (F64)color.g;
-    F64 b = (F64)color.b;
-    F64 a = (F64)color.a * (F64)t;
+    iColor_tag tmp = color;
+    xColorUnpack tmp2 = *(xColorUnpack*)&tmp;
 
-    iColor_tag ret;
-    xColorInit(&ret, (U8)r, (U8)g, (U8)b, (U8)a);
-    return ret;
+    F32 r = (F32)tmp2.r;
+    F32 g = (F32)tmp2.g;
+    F32 b = (F32)tmp2.b;
+    F32 a = (F32)tmp2.a;
+
+    a *= scale;
+
+    xColorInit(&tmp, (U8)r, (U8)g, (U8)b, (U8)a);
+
+    return tmp;
 }
 
-void __deadstripped_strings(xCMpreset* preset)
-{
-    switch (preset->align)
-    {
-    // TODO: Assign correct cases to these and make an enum/defines out of it
-    default:
-    {
-        xprintf("CM_ALIGN_CENTER");
-        xprintf("CM_ALIGN_LEFT");
-        xprintf("CM_ALIGN_RIGHT");
-        xprintf("CM_ALIGN_INNER");
-        xprintf("CM_ALIGN_TEXTURE");
-    }
-    }
-}
+static const char* preset_names[] = {
+    "CM_ALIGN_CENTER",
+    "CM_ALIGN_LEFT",
+    "CM_ALIGN_RIGHT",
+    "CM_ALIGN_INNER",
+    "CM_ALIGN_TEXTURE"
+};
 
 static U32 xCMrender(F32 time, xCreditsData* data)
 {
-    if (data == NULL || ((xCMheader*)data)->magic != 0xBEEEEEEF)
-        return 0;
+    xCMhunk* hp;
 
     xCMheader* hdr = (xCMheader*)data;
-    if (hdr->state == 1)
-        xCMprep(data);
 
-    char* dp = (char*)data;
+    if (!hdr || hdr->magic != 0xBEEEEEEF)
+        return FALSE;
+
+    char* dp;
+    xCMcredits* cp;
+    xCMpreset* pp;
+
+    if (hdr->state == 1) {
+        xCMprep(data);
+    }
 
     xprintf("credits time %6.2f\n", time);
 
-    xCMhunk* hp;
-    xCMcredits* cp = (xCMcredits*)(dp + sizeof(xCMheader));
-    while ((U32)((char*)cp - dp) < hdr->total_size)
-    {
-        xCMpreset* pp = (xCMpreset*)((char*)cp + sizeof(xCMcredits));
-        hp = (xCMhunk*)((char*)pp + cp->num_presets * sizeof(xCMpreset));
+    dp = (char*)(hdr + 1);
+    while (dp - (char*)data < hdr->total_size) {
+        cp = (xCMcredits*)dp;
+        pp = (xCMpreset*)(cp + 1);
+        hp = (xCMhunk*)(pp + cp->num_presets);
 
-        for (; (U32)((char*)hp - (char*)cp) < cp->credits_size;
-             hp = (xCMhunk*)((char*)hp + hp->hunk_size))
-        {
-            if (time >= hp->t0 && time <= hp->t1)
-            {
-                F32 t = (time - hp->t0) / (hp->t1 - hp->t0);
+        while ((char*)hp - (char*)cp < cp->credits_size) {
+            if (time >= hp->t0 && time <= hp->t1) {
+                F32 a = (time - hp->t0) / (hp->t1 - hp->t0);
                 xCMpreset* preset = &pp[hp->preset];
 
-                F32 yScroll = t * (cp->out.y - cp->in.y) + cp->in.y;
+                F32 nx, ny;
+                ny = a * (cp->out.y - cp->in.y) + cp->in.y;
 
-                F32 a;
-                if (t < cp->fin.start || t > cp->fout.end)
-                    a = 0.0f;
-                else if (t >= cp->fin.start && t <= cp->fin.end)
-                    a = (t - cp->fin.start) / (cp->fin.end - cp->fin.start);
-                else if (t >= cp->fout.start && t <= cp->fout.end)
-                    a = (cp->fout.end - t) / (cp->fout.end - cp->fout.start);
+                F32 x0, x1, y0, y1, ca;
+                if (a < cp->fin.start || a > cp->fout.end)
+                    ca = 0.0f;
+                else if (a >= cp->fin.start && a <= cp->fin.end)
+                    ca = (a - cp->fin.start) / (cp->fin.end - cp->fin.start);
+                else if (a >= cp->fout.start && a <= cp->fout.end)
+                    ca = (cp->fout.end - a) / (cp->fout.end - cp->fout.start);
                 else
-                    a = 1.0f;
+                    ca = 1.0f;
 
-                switch (preset->align)
-                {
-                case 4:
-                {
+                switch (preset->align) {
+                case CM_ALIGN_TEXTURE: {
                     xCMtexture* tex = (xCMtexture*)&preset->box[0];
-                    if (tex->texture == NULL)
+                    if (!tex->texture)
                         tex->texture = (RwTexture*)xSTFindAsset(tex->assetID, NULL);
-                    if (tex->texture != NULL)
-                        RwRenderStateSet(rwRENDERSTATETEXTURERASTER, tex->texture->raster);
+                    if (tex->texture) {
+                        RwRaster* raster = RwTextureGetRaster(tex->texture);
+                        RwRenderStateSet(rwRENDERSTATETEXTURERASTER, (void*)raster);
+                    }
 
-                    F32 x0 = 640.0f * tex->x;
-                    F32 y0 = 480.0f * tex->y;
-                    F32 x1 = 640.0f * (tex->x + tex->w);
-                    F32 y1 = 480.0f * (tex->y + tex->h);
+                    nx = tex->x;
+                    ny = tex->y;
+                    x0 = nx * SCREEN_WIDTH;
+                    y0 = ny * SCREEN_HEIGHT;
+                    x1 = (nx + tex->w) * SCREEN_WIDTH;
+                    y1 = (ny + tex->h) * SCREEN_HEIGHT;
+
                     Im2DRenderQuad(x0, y0, x1, y1, 0.0f, 1000000.0f, 0.5f);
+
                     xprintf("tex %6.2f,%6.2f - %6.2f,%6.2f\n", x0, y0, x1, y1);
                     break;
                 }
-                case 0:
-                {
-                    xCMtextbox* box = &preset->box[0];
+                case CM_ALIGN_CENTER: {
+                    nx = 0.5f * (1.0f - preset->box[0].box.x);
+                    x0 = nx * SCREEN_WIDTH;
+                    y0 = ny * SCREEN_HEIGHT;
+                    x1 = (nx + preset->box[0].box.x) * SCREEN_WIDTH;
+                    y1 = (ny + preset->box[0].box.y) * SCREEN_HEIGHT;
 
-                    basic_rect<F32> bounds = { 0.0f, 0.0f, 0.0f, 0.0f };
-                    bounds.x = 0.5f * (1.0f - box->box.x);
-                    bounds.y = yScroll;
-                    bounds.w = box->box.x;
-                    bounds.h = box->box.y;
+                    iColor_tag color = xCMcolor_scale(preset->box[0].color, ca);
 
-                    iColor_tag scaled = xCMcolor_scale(box->color, a);
+                    basic_rect<F32> bounds = { nx, ny, preset->box[0].box.x, preset->box[0].box.y };
 
-                    xtextbox tb =
-                        xtextbox::create(xfont::create(box->font, NSCREENX(box->char_size.x),
-                                                       NSCREENY(box->char_size.y),
-                                                       box->char_spacing.x, scaled, screen_bounds),
-                                         bounds, 2, 0.0f, 0.0f, 0.0f, 0.0f);
+                    xtextbox tb = xtextbox::create(
+                        xfont::create(
+                            preset->box[0].font,
+                            NSCREENX(preset->box[0].char_size.x),
+                            NSCREENY(preset->box[0].char_size.y),
+                            0.0f,
+                            color,
+                            screen_bounds),
+                        bounds,
+                        0x2,
+                        0.0f,
+                        0.0f,
+                        0.0f,
+                        0.0f);
+
                     tb.set_text(hp->text1);
                     tb.render(true);
                     break;
                 }
-                case 1:
-                case 2:
-                case 3:
-                {
-                    xCMtextbox* box0 = &preset->box[0];
-                    xCMtextbox* box1 = &preset->box[1];
+                case CM_ALIGN_LEFT:
+                case CM_ALIGN_RIGHT:
+                case CM_ALIGN_INNER: {
+                    nx = 0.5f * (1.0f - preset->box[0].box.x - preset->box[1].box.x - preset->innerspace);
+                    x0 = nx * SCREEN_WIDTH;
+                    y0 = ny * SCREEN_HEIGHT;
+                    x1 = (nx + preset->box[0].box.x) * SCREEN_WIDTH;
+                    y1 = (ny + preset->box[0].box.y) * SCREEN_HEIGHT;
 
-                    F32 x0 = 0.5f * (1.0f - box0->box.x - preset->innerspace - box1->box.x);
-
-                    U32 alignL, alignR;
-                    if (preset->align == 1)
-                    {
-                        alignL = 0;
-                        alignR = 0;
-                    }
-                    else if (preset->align == 2)
-                    {
-                        alignL = 1;
-                        alignR = 1;
-                    }
-                    else
-                    {
-                        alignL = 1;
-                        alignR = 0;
+                    U32 alignL = 0, alignR = 0;
+                    if (preset->align == CM_ALIGN_LEFT) {
+                        alignL = alignR = 0x0;
+                    } else if (preset->align == CM_ALIGN_RIGHT) {
+                        alignL = alignR = 0x1;
+                    } else {
+                        alignL = 0x1;
+                        alignR = 0x0;
                     }
 
-                    // Scoped because of multiple bounds in dwarf
                     {
-                        iColor_tag scaled0 = xCMcolor_scale(box0->color, a);
-                        basic_rect<F32> bounds = { 0.0f, 0.0f, 0.0f, 0.0f };
-                        bounds.x = x0;
-                        bounds.y = yScroll;
-                        bounds.w = box0->box.x;
-                        bounds.h = box0->box.y;
+                        iColor_tag colorL = xCMcolor_scale(preset->box[0].color, ca);
+
+                        basic_rect<F32> bounds = { nx, ny, preset->box[0].box.x, preset->box[0].box.y };
 
                         xtextbox tb = xtextbox::create(
-                            xfont::create(box0->font, NSCREENX(box0->char_size.x),
-                                          NSCREENY(box0->char_size.y), box0->char_spacing.x,
-                                          scaled0, screen_bounds),
-                            bounds, alignL, 0.0f, 0.0f, 0.0f, 0.0f);
+                            xfont::create(
+                                preset->box[0].font,
+                                NSCREENX(preset->box[0].char_size.x),
+                                NSCREENY(preset->box[0].char_size.y),
+                                0.0f,
+                                colorL,
+                                screen_bounds),
+                            bounds,
+                            alignL,
+                            0.0f,
+                            0.0f,
+                            0.0f,
+                            0.0f);
+
                         tb.set_text(hp->text1);
                         tb.render(true);
                     }
 
-                    F32 x1 = x0 + box0->box.x + preset->innerspace;
+                    nx += preset->box[0].box.x + preset->innerspace;
 
                     {
-                        iColor_tag scaled1 = xCMcolor_scale(box1->color, a);
-                        basic_rect<F32> bounds = { 0.0f, 0.0f, 0.0f, 0.0f };
-                        bounds.x = x1;
-                        bounds.y = yScroll;
-                        bounds.w = box1->box.x;
-                        bounds.h = box1->box.y;
+                        iColor_tag colorR = xCMcolor_scale(preset->box[1].color, ca);
+
+                        basic_rect<F32> bounds = { nx, ny, preset->box[1].box.x, preset->box[1].box.y };
 
                         xtextbox tb = xtextbox::create(
-                            xfont::create(box1->font, NSCREENX(box1->char_size.x),
-                                          NSCREENY(box1->char_size.y), box1->char_spacing.x,
-                                          scaled1, screen_bounds),
-                            bounds, alignR, 0.0f, 0.0f, 0.0f, 0.0f);
+                            xfont::create(
+                                preset->box[0].font,
+                                NSCREENX(preset->box[1].char_size.x),
+                                NSCREENY(preset->box[1].char_size.y),
+                                0.0f,
+                                colorR,
+                                screen_bounds),
+                            bounds,
+                            alignR,
+                            0.0f,
+                            0.0f,
+                            0.0f,
+                            0.0f);
+
                         tb.set_text(hp->text2);
                         tb.render(true);
                     }
                     break;
                 }
-                default:
-                    break;
                 }
             }
+
+            hp = (xCMhunk*)((char*)hp + hp->hunk_size);
         }
-        cp = (xCMcredits*)hp;
+
+        dp = (char*)hp;
     }
 
-    if (time >= 0.0f && time <= hdr->total_time)
-        return 1;
-    return 0;
+    return time >= 0.0f && time <= hdr->total_time;
 }
 
-void xCMupdate(F32 time)
+F32 dtscale = 1.0f;
+
+static F32 credits_time = 10000.0f;
+static xCreditsData* credits_data = NULL;
+
+void xCMupdate(F32 dt)
 {
-    if (credits_data != 0)
-    {
-        credits_time += (time * dtscale);
-        if (credits_time >= *(F32*)((S32)&credits_data->dummy + 0x10))
-        {
-            xCMstop();
-        }
+    if (!credits_data) {
+        return;
+    }
+
+    credits_time += dt * dtscale;
+
+    xCMheader* hdr = (xCMheader*)credits_data;
+    if (credits_time >= hdr->total_time) {
+        xCMstop();
     }
 }
 
@@ -303,26 +373,27 @@ void xCMrender()
     xCMrender(credits_time, credits_data);
 }
 
-void xCMstart(xCreditsData* data, F32 time, xBase* parent)
-{
-    if ((credits_data = data) != NULL)
-    {
-        credits_time = 0.0f;
+static U32 credits_parentID = 0;
 
-        if (parent != NULL)
-        {
-            credits_parentID = parent->id;
-        }
+void xCMstart(xCreditsData* data, F32, xBase* parent)
+{
+    credits_data = data;
+
+    if (!credits_data) {
+        return;
     }
+
+    credits_time = 0.0f;
+
+    if (parent)
+        credits_parentID = parent->id;
 }
 
-// Equivalent: scheduling
 void xCMstop()
 {
     credits_time = 10000.0f;
     credits_data = NULL;
-    if (credits_parentID != 0)
-    {
-        zEntEvent(credits_parentID, 0x212);
-    }
+
+    if (credits_parentID)
+        zEntEvent(credits_parentID, eEventCreditsEnded);
 }

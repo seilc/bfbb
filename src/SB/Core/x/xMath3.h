@@ -167,7 +167,15 @@ void xQuatMul(xQuat* o, const xQuat* a, const xQuat* b);
 void xQuatDiff(xQuat* o, const xQuat* a, const xQuat* b);
 
 void xBoxUnion(xBox& a, const xBox& b, const xBox& c);
-void xBoxFromCircle(xBox& box, const xVec3& center, const xVec3& dir, F32 r);
+
+inline void xBoxFromCircle(xBox& box, const xVec3& center, const xVec3& dir, F32 radius)
+{
+    xVec3 offset = { radius * xsqrt(1.0f - dir.x * dir.x), radius * xsqrt(1.0f - dir.y * dir.y),
+                     radius * xsqrt(1.0f - dir.z * dir.z) };
+    box.upper = center + offset;
+    box.lower = center - offset;
+}
+
 void xQuatSMul(xQuat* q, const xQuat* a, F32 t);
 F32 xQuatLength2(const xQuat* q);
 void xQuatAdd(xQuat* q, const xQuat* a, const xQuat* b);

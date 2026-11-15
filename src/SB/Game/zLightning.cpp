@@ -168,7 +168,7 @@ void zLightningInit()
     gLightningTweakAddInfo.zeus_back_offset = 0.2f;
     gLightningTweakAddInfo.zeus_side_offset = 0.0f;
 
-    sLightningStartCB.on_change = (void (*)(tweak_info&))&lightningTweakStart;
+    sLightningStartCB.on_change = &lightningTweakStart;
     sLightningChangeCB.on_change = &lightningTweakChangeType;
 
     xDebugAddTweak("Lightning|\01\01Go", "Start Lightning", &sLightningStartCB, NULL, 0x2);

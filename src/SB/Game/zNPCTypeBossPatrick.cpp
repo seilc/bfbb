@@ -241,8 +241,8 @@ xAnimTable* ZNPC_AnimTable_BossPatrick()
 void on_change_newsfish(const tweak_info&);
 void on_change_recenter(const tweak_info&);
 
-static const tweak_callback newsfish_cb = { (void (*)(tweak_info&))on_change_newsfish };
-static const tweak_callback recenter_cb = { (void (*)(tweak_info&))on_change_recenter };
+static const tweak_callback newsfish_cb = { on_change_newsfish };
+static const tweak_callback recenter_cb = { on_change_recenter };
 
 static void UpdatePatrickBossCam(zNPCBPatrick* pat, F32 dt)
 {

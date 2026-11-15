@@ -41,5 +41,6 @@ void xShadowManager_Init(S32 numEnts);
 void xShadowManager_Reset();
 void xShadowManager_Render();
 void xShadowRender(xEnt* ent, F32 max_dist);
+S32 Im2DRenderQuad(F32 x1, F32 y1, F32 x2, F32 y2, F32 z, F32 recipCamZ, F32 uvOffset);
 
 #endif

@@ -1,6 +1,7 @@
 #ifndef XSND_H
 #define XSND_H
 
+#include "xDebugTweak.h"
 #include "xEnt.h"
 #include "xMath3.h"
 #include "xVec3.h"

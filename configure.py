@@ -646,7 +646,7 @@ config.libs = [
             Object(NonMatching, "SB/Game/zNPCFXCinematic.cpp"),
             Object(Matching, "SB/Core/x/xHudText.cpp", extra_cflags=["-sym on"]),
             Object(NonMatching, "SB/Game/zCombo.cpp", extra_cflags=["-sym on"]),
-            Object(NonMatching, "SB/Core/x/xCM.cpp"),
+            Object(Matching, "SB/Core/x/xCM.cpp"),
         ],
     },
     {

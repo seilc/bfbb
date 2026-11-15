@@ -8,6 +8,7 @@
 #include "zScene.h"
 #include "zUI.h"
 
+#include "xFont.h"
 #include "xSnd.h"
 #include "xString.h"
 #include "xsavegame.h"
@@ -83,24 +84,6 @@ S32 bad_card_needed;
 char* var_text(const substr& str);
 U32 zVarEntryCB_SndFXVol(void*);
 U32 zVarEntryCB_SndMusicVol(void*);
-
-// These structs were used in deadstripped functions.
-// This function is here to force the symbols to be linked.
-void __deadstripped_zVar()
-{
-    const char _454[0x0C] = {};
-    const char _485[0x0C] = {};
-
-    const char _617[0x28] = {};
-    const char _618[0x28] = {};
-    const char _619[0x28] = {};
-    const char _620[0x28] = {};
-    const char _621[0x28] = {};
-    const char _622[0x28] = {};
-    const char _623[0x28] = {};
-}
-
-#include "xFont.h"
 
 // var_text callbacks
 namespace
@@ -201,8 +184,6 @@ namespace
         return buffer;
     }
 } // namespace
-
-const basic_rect<F32> default_adjust = { 0.0f, 0.0f, 1.0f, 1.0f };
 
 namespace
 {

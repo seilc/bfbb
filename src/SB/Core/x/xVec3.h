@@ -84,12 +84,7 @@ struct xVec3
 
     xVec3 cross(const xVec3& c) const
     {
-        xVec3 v = xVec3::m_Null;
-
-        v.x = y * c.y - c.y * z;
-        v.y = z * c.x - c.z * x;
-        v.z = x * c.y - c.x * y;
-
+        xVec3 v = { y * c.z - c.y * z, z * c.x - c.z * x, x * c.y - c.x * y };
         return v;
     }
 

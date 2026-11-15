@@ -7,6 +7,7 @@
 #include "zShrapnel.h"
 
 #include "xDebug.h"
+#include "xDebugTweak.h"
 
 #include <types.h>
 

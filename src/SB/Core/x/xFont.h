@@ -7,6 +7,7 @@
 #include <rwcore.h>
 
 static const basic_rect<F32> screen_bounds = { 0, 0, 1, 1 };
+static const basic_rect<F32> default_adjust = { 0, 0, 1, 1 };
 
 struct xfont
 {
