@@ -77,8 +77,6 @@ struct exception {
 	double retval;
 };
 
-#define HUGE MAXFLOAT
-
 /*
  * set X_TLOSS = pi*2**52, which is possibly defined in <values.h>
  * (one may replace the following line by "#include <values.h>")

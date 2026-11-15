@@ -14,20 +14,16 @@ template <class T> struct basic_rect
     const static basic_rect m_Unit;
 
     basic_rect& assign(T x, T y, T w, T h);
-    basic_rect& contract(T s);
-    basic_rect& contract(T x, T y, T w, T h)
+    basic_rect& expand(T left, T top, T right, T bottom)
     {
-        return expand(-x, -y, -w, -h);
-    }
-    basic_rect& expand(T s);
-    basic_rect& expand(T x, T y, T w, T h)
-    {
-        this->x -= x;
-        this->w += x + w;
-        this->y -= y;
-        this->h += y + h;
+        x -= left; w += left + right;
+        y -= top; h += top + bottom;
         return *this;
     }
+
+    basic_rect& expand(T v) { return expand(v, v, v, v); }
+    basic_rect& contract(T v) { return expand(-v); }
+    basic_rect& contract(T left, T top, T right, T bottom) { return expand(-left, -top, -right, -bottom); }
     basic_rect& move(T x, T y);
     basic_rect& scale(T s);
     basic_rect& scale(T x, T y);

@@ -8,6 +8,7 @@
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 #define EPSILON 1e-5f
+#define HUGE 1e38f
 #define xabs(x) iabs(x)
 
 #define xeq(a, b, e) (xabs((a) - (b)) <= (e))

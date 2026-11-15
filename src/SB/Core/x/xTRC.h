@@ -3,7 +3,9 @@
 
 #include "iTRC.h"
 
-enum _tagTRCState
+#define k_MAX_TRC_PADS 4
+
+typedef enum _tagTRCState
 {
     TRC_Unknown,
     TRC_PadMissing,
@@ -19,22 +21,27 @@ enum _tagTRCState
     TRC_DiskRetry,
     TRC_DiskFatal,
     TRC_Total
-};
+} TRCState;
 
-struct _tagTRCPadInfo : _tagiTRCPadInfo
+typedef struct _tagTRCPadInfo : iTRCPadInfo
 {
     S32 id;
-    _tagTRCState state;
-};
+    TRCState state;
+} TRCPadInfo;
 
-_tagTRCPadInfo gTrcPad[];
-_tagTRCState gTrcDisk[];
+typedef struct _tagTRCDiskInfo
+{
+    TRCState state;
+    TRCState id;
+} TRCDiskInfo;
+
+extern TRCPadInfo gTrcPad[k_MAX_TRC_PADS];
 
 void xTRCInit();
-void xTRCPad(S32 pad_id, _tagTRCState state);
 void xTRCRender();
 void xTRCReset();
-void xTRCDisk(_tagTRCState state);
+void xTRCPad(S32 pad_id, TRCState state);
+void xTRCDisk(TRCState state);
 void render_mem_card_no_space(S32 needed, S32 available, S32 neededFiles, bool enabled);
 void RenderText(const char* text, bool enabled);
 

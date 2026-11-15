@@ -15,7 +15,7 @@ enum _tagPadState
     ePad_Total
 };
 
-enum _tagPadInit
+typedef enum _tagPadInit
 {
     ePadInit_Open1,
     ePadInit_WaitStable2,
@@ -28,7 +28,7 @@ enum _tagPadInit
     ePadInit_Complete8a,
     ePadInit_Complete8b,
     ePadInit_Finished9
-};
+} ePadInit;
 
 struct _tagPadAnalog
 {

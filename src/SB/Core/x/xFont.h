@@ -222,14 +222,12 @@ struct xtextbox
     void set_text(const char** texts, size_t size);
     void set_text(const char** texts, const size_t* text_sizes, size_t size);
     layout& temp_layout(bool cache) const;
-    void render(bool cache) const
-    {
-        render(temp_layout(cache), 0, -1);
-    }
+    void render(bool cache) const { render(temp_layout(cache), 0, -1); }
     void render(layout& l, S32 begin_jot, S32 end_jot) const;
-    F32 yextent(bool cache) const;
     F32 yextent(F32 max, S32& size, bool cache) const;
     F32 yextent(F32 max, S32& size, const layout& l, S32 begin_jot, S32 end_jot) const;
+    F32 yextent(const layout& l, S32 begin_jot, S32 end_jot) const { S32 size; return yextent(HUGE, size, l, begin_jot, end_jot); }
+    F32 yextent(bool cache) const { return yextent(temp_layout(cache), 0, -1); }
 };
 
 struct xtextbox::layout

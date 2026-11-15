@@ -7,10 +7,10 @@
 
 #include <types.h>
 
-struct _tagiTRCPadInfo
+typedef struct _tagiTRCPadInfo
 {
-    _tagPadInit pad_init;
-};
+    ePadInit pad_init;
+} iTRCPadInfo;
 
 namespace ROMFont
 {
