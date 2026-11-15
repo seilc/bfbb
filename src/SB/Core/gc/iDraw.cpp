@@ -32,6 +32,24 @@ void iDrawSetFBMSK(U32 abgr)
     }
 }
 
+#if PAL
+extern GXRenderModeObj* _RwDlRenderMode;
+
+void iDrawSetDisplayOffset(F32 x, F32 y)
+{
+    F32 nPosX = x * SCREEN_WIDTH + 40.0f;
+    F32 nPosY = y * SCREEN_HEIGHT + 23.0f;
+
+    nPosX = CLAMP(nPosX, 0.0f, 80.0f);
+    nPosY = CLAMP(nPosY, 0.0f, 551.0f);
+
+    _RwDlRenderMode->viXOrigin = nPosX;
+    _RwDlRenderMode->viYOrigin = nPosY;
+
+    VIConfigure(_RwDlRenderMode);
+}
+#endif
+
 void iDrawBegin()
 {
     return;

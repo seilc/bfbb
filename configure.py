@@ -326,6 +326,7 @@ cflags_bfbb = [
     "-i src/SB/Core/x",
     "-i src/SB/Game",
     "-DGAMECUBE",
+    "-DPAL=1" if config.version == "GQPP78" else "-DPAL=0",
     "-prefix prefix.mch",
 ]
 
@@ -540,7 +541,7 @@ config.libs = [
             Object(NonMatching, "SB/Core/x/iCamera.cpp"),
             Object(NonMatching, "SB/Core/gc/iCollide.cpp", extra_cflags=["-sym on"]),
             Object(Matching, "SB/Core/gc/iCollideFast.cpp"),
-            Object(MatchingFor("GQPE78"), "SB/Core/gc/iDraw.cpp"),
+            Object(Matching, "SB/Core/gc/iDraw.cpp"),
             Object(Equivalent, "SB/Core/gc/iEnv.cpp"),
             Object(NonMatching, "SB/Core/gc/iFile.cpp"),
             Object(Equivalent, "SB/Core/gc/iFMV.cpp"),
