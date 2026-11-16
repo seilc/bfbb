@@ -21,8 +21,8 @@ A work-in-progress matching decompilation of *SpongeBob SquarePants: Battle for 
 [The SpongeBob SquarePants Movie](https://github.com/seilc/tssm), which this project ports matched code from.
 
 Based on the community decompilation [bfbbdecomp/bfbb](https://github.com/bfbbdecomp/bfbb) at
-[`d8e8eac3`](https://github.com/bfbbdecomp/bfbb/commit/d8e8eac3), whose history this repository keeps; thanks to
-its contributors. Upstream changes after that commit are not merged.
+[`d8e8eac3`](https://github.com/bfbbdecomp/bfbb/commit/d8e8eac3), whose history this repository keeps. Upstream
+changes after that commit are not merged.
 
 This repository does **not** contain any game assets or assembly whatsoever. An existing copy of the game is required.
 
@@ -122,3 +122,21 @@ Download the latest release from [encounter/objdiff](https://github.com/encounte
 Select an object from the left sidebar to begin diffing. Changes to the project will rebuild automatically: changes to source files, headers, `configure.py`, `splits.txt` or `symbols.txt`.
 
 ![](assets/objdiff.png)
+
+# Credits
+
+**[bfbbdecomp/bfbb](https://github.com/bfbbdecomp/bfbb)** -
+The community decompilation this repository is forked from (at `d8e8eac3`), and
+[its contributors](https://github.com/bfbbdecomp/bfbb/graphs/contributors).
+
+**[doldecomp/mweppc](https://github.com/doldecomp/mweppc)** -
+The decompiled CodeWarrior compiler our `GC/2.0p3` is built from.
+
+**[zcanann/bfbb](https://github.com/zcanann/bfbb)** -
+A test set for modelling `GC/2.0p3`; none of its code is used here.
+
+**[joeyballentine/bfbb](https://github.com/joeyballentine/bfbb/tree/duplotron)** (duplotron) -
+Its notes on the compiler's register allocation and switch code; none of its code is used in our work.
+
+Code ported from the Ratatouille, Rise of the Underminer, Incredibles and SpongeBob Movie decomps is credited in those
+repositories.
