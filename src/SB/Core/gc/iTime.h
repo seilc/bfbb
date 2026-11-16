@@ -18,6 +18,8 @@
 
 typedef S64 iTime;
 
+#define iTimeFromSec(sec) ((iTime)OSSecondsToTicks(sec))
+
 S32 iGetMinute();
 S32 iGetHour();
 S32 iGetDay();

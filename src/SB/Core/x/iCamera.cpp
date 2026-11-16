@@ -1,20 +1,16 @@
 #include "xCommon.h"
 #include "iCamera.h"
 
-#include "zGlobals.h"
-
-#include "xShadow.h"
-
-#include "iMath.h"
 #include "iScrFX.h"
+#include "xGlobals.h"
+#include "xShadow.h"
 
 #include <string.h>
 
-RwCamera* globalCamera;
-static RwCamera* sMainGameCamera;
-
 F32 sCameraNearClip = 0.05f;
 F32 sCameraFarClip = 400.0f;
+RwCamera* globalCamera = NULL;
+static RwCamera* sMainGameCamera = NULL;
 
 RwCamera* iCameraCreate(S32 width, S32 height, S32 mainGameCamera)
 {
@@ -26,16 +22,15 @@ RwCamera* iCameraCreate(S32 width, S32 height, S32 mainGameCamera)
     RwCameraSetFrame(camera, RwFrameCreate());
     RwCameraSetRaster(camera, RwRasterCreate(width, height, 0, rwRASTERTYPECAMERA));
     RwCameraSetZRaster(camera, RwRasterCreate(width, height, 0, rwRASTERTYPEZBUFFER));
+
     RwCameraSetFarClipPlane(camera, sCameraFarClip);
     RwCameraSetNearClipPlane(camera, sCameraNearClip);
 
     vw.x = 1.0f;
     vw.y = 1.0f;
-
     RwCameraSetViewWindow(camera, &vw);
 
-    if (mainGameCamera)
-    {
+    if (mainGameCamera) {
         iScrFxCameraCreated(camera);
         sMainGameCamera = camera;
     }
@@ -46,46 +41,36 @@ RwCamera* iCameraCreate(S32 width, S32 height, S32 mainGameCamera)
 void iCameraDestroy(RwCamera* camera)
 {
     RpWorld* pWorld;
-    RwRaster* raster;
-    RwFrame* frame;
 
     _rwFrameSyncDirty();
 
     pWorld = RwCameraGetWorld(camera);
-
-    if (pWorld)
-    {
+    if (pWorld) {
         RpWorldRemoveCamera(pWorld, camera);
     }
 
-    if (camera == sMainGameCamera)
-    {
+    if (camera == sMainGameCamera) {
         iScrFxCameraDestroyed(camera);
-        sMainGameCamera = NULL;
+        sMainGameCamera = 0;
     }
 
-    if (camera)
-    {
-        frame = RwCameraGetFrame(camera);
+    if (camera) {
+        RwRaster* raster;
 
-        if (frame)
-        {
+        RwFrame* frame = RwCameraGetFrame(camera);
+        if (frame) {
             RwCameraSetFrame(camera, NULL);
             RwFrameDestroy(frame);
         }
 
         raster = RwCameraGetRaster(camera);
-
-        if (raster)
-        {
+        if (raster) {
             RwRasterDestroy(raster);
             RwCameraSetRaster(camera, NULL);
         }
 
         raster = RwCameraGetZRaster(camera);
-
-        if (raster)
-        {
+        if (raster) {
             RwRasterDestroy(raster);
             RwCameraSetZRaster(camera, NULL);
         }
@@ -96,16 +81,11 @@ void iCameraDestroy(RwCamera* camera)
 
 void iCameraBegin(RwCamera* cam, S32 clear)
 {
-    if (clear)
-    {
-        if (xglobals->fog.type != rwFOGTYPENAFOGTYPE)
-        {
+    if (clear) {
+        if (xglobals->fog.type != rwFOGTYPENAFOGTYPE) {
             RwCameraClear(cam, &xglobals->fog.bgcolor, rwCAMERACLEARIMAGE | rwCAMERACLEARZ);
-        }
-        else
-        {
+        } else
             RwCameraClear(cam, NULL, rwCAMERACLEARZ);
-        }
     }
 
     RwCameraSetNearClipPlane(cam, sCameraNearClip);
@@ -204,15 +184,13 @@ void iCameraFrustumPlanes(RwCamera* cam, xVec4* frustplane)
 void iCameraUpdatePos(RwCamera* cam, xMat4x3* pos)
 {
     RwFrame* f;
-    RwMatrix* m;
 
     f = RwCameraGetFrame(cam);
-    m = RwFrameGetMatrix(f);
 
+    RwMatrix* m = RwFrameGetMatrix(f);
     xMat4x3Copy((xMat4x3*)m, pos);
 
     m = RwFrameGetLTM(f);
-
     xMat4x3Copy((xMat4x3*)m, pos);
 
     RwFrameOrthoNormalize(f);
@@ -221,13 +199,11 @@ void iCameraUpdatePos(RwCamera* cam, xMat4x3* pos)
 
 void iCameraSetFOV(RwCamera* cam, F32 fov)
 {
+    F32 view_window = itan(0.5f * fov * PI / 180.0f);
     RwV2d vw;
 
-    vw.x = itan(PI * (0.5f * fov) / 180.0f);
-
-    // non-matching: frsp instruction is here for some reason
-    vw.y = 0.75f * vw.x;
-
+    vw.x = view_window;
+    vw.y = view_window * 0.75f;
     RwCameraSetViewWindow(cam, &vw);
 }
 
@@ -241,11 +217,9 @@ void iCameraAssignEnv(RwCamera* camera, iEnv* env_geom)
 
 void iCamGetViewMatrix(RwCamera* camera, xMat4x3* view_matrix)
 {
-    RwMatrix* rw_view;
+    RwMatrix* rw_view = RwCameraGetViewMatrix(camera);
 
     memset(view_matrix, 0, sizeof(xMat4x3));
-
-    rw_view = RwCameraGetViewMatrix(camera);
 
     view_matrix->right.x = rw_view->right.x;
     view_matrix->right.y = rw_view->right.y;
@@ -263,69 +237,90 @@ void iCamGetViewMatrix(RwCamera* camera, xMat4x3* view_matrix)
 
 void iCameraSetNearFarClip(F32 nearPlane, F32 farPlane)
 {
-    if (nearPlane <= 0.0f)
-    {
-        nearPlane = 0.05f;
-    }
-
-    sCameraNearClip = nearPlane;
-
-    if (farPlane <= 0.0f)
-    {
-        farPlane = 400.0f;
-    }
-
-    sCameraFarClip = farPlane;
+    sCameraNearClip = (nearPlane <= 0.0f) ? 0.05f : nearPlane;
+    sCameraFarClip = (farPlane <= 0.0f) ? 400.0f : farPlane;
 }
 
 void iCameraSetFogParams(iFogParams* fp, F32 time)
 {
-    if (!fp || fp->type == rwFOGTYPENAFOGTYPE)
-    {
+    if (!fp || fp->type == rwFOGTYPENAFOGTYPE) {
         xglobals->fog.type = rwFOGTYPENAFOGTYPE;
         xglobals->fogA.type = rwFOGTYPENAFOGTYPE;
     }
-    else if (0.0f == time || fp->type != xglobals->fogA.type)
-    {
+    else if (time == 0.0f || fp->type != xglobals->fogA.type) {
         xglobals->fog = *fp;
         xglobals->fogA = *fp;
         xglobals->fog_t0 = 0;
-    }
-    else
-    {
+    } else {
         xglobals->fogA = xglobals->fog;
         xglobals->fogB = *fp;
-
         xglobals->fog_t0 = iTimeGet();
-        xglobals->fog_t1 = xglobals->fog_t0 + (iTime)(time * 1000.0f);
+        xglobals->fog_t1 = xglobals->fog_t0 + iTimeFromSec(time);
+    }
+}
+
+void iCameraUpdateFog(RwCamera*, iTime t)
+{
+    iFogParams* fp = &xglobals->fog, *fa = &xglobals->fogA, *fb = &xglobals->fogB;
+    F32 a;
+    RwRGBA ca, cb, color;
+
+    if (xglobals->fog.type == rwFOGTYPENAFOGTYPE) return;
+    if (xglobals->fog_t0 == 0) return;
+
+    t = iTimeGet();
+
+    a = iTimeDiffSec(xglobals->fog_t0, t) / iTimeDiffSec(xglobals->fog_t0, xglobals->fog_t1);
+    a = CLAMP(a, 0.0f, 1.0f);
+
+    fp->type = xglobals->fogB.type;
+    fp->table = xglobals->fogB.table;
+    fp->start = fa->start + a * (fb->start - fa->start);
+    fp->stop = fa->stop + a * (fb->stop - fa->stop);
+    fp->density = fa->density + a * (fb->density - fa->density);
+
+    ca = fa->fogcolor;
+    cb = fb->fogcolor;
+    color.red = ca.red + a * (cb.red - ca.red);
+    color.green = ca.green + a * (cb.green - ca.green);
+    color.blue = ca.blue + a * (cb.blue - ca.blue);
+    color.alpha = ca.alpha + a * (cb.alpha - ca.alpha);
+    fp->fogcolor = color;
+
+    ca = fa->bgcolor;
+    cb = fb->bgcolor;
+    color.red = ca.red + a * (cb.red - ca.red);
+    color.green = ca.green + a * (cb.green - ca.green);
+    color.blue = ca.blue + a * (cb.blue - ca.blue);
+    color.alpha = ca.alpha + a * (cb.alpha - ca.alpha);
+    fp->bgcolor = color;
+
+    if (a == 1.0f) {
+        xglobals->fog_t0 = 0;
+        xglobals->fogA = xglobals->fogB;
     }
 }
 
 void iCameraSetFogRenderStates()
 {
     RwCamera* pCamera;
-    iFogParams* pFogParams;
-    U32 bite_me;
 
     pCamera = RwCameraGetCurrentCamera();
-    pFogParams = &xglobals->fog;
 
-    if (pFogParams->type == rwFOGTYPENAFOGTYPE)
-    {
+    iFogParams* pFogParams = &xglobals->fog;
+    if (pFogParams->type == rwFOGTYPENAFOGTYPE) {
         RwRenderStateSet(rwRENDERSTATEFOGENABLE, (void*)FALSE);
-
         RwCameraSetFarClipPlane(pCamera, sCameraFarClip);
-    }
-    else
-    {
-        bite_me = (pFogParams->fogcolor.alpha << 24) | (pFogParams->fogcolor.red << 16) |
-                  (pFogParams->fogcolor.green << 8) | pFogParams->fogcolor.blue;
+    } else {
+        RwUInt32 bite_me = RWRGBALONG(pFogParams->fogcolor.red,
+                                      pFogParams->fogcolor.green,
+                                      pFogParams->fogcolor.blue,
+                                      pFogParams->fogcolor.alpha);
 
         RwRenderStateSet(rwRENDERSTATEFOGENABLE, (void*)TRUE);
         RwRenderStateSet(rwRENDERSTATEFOGTYPE, (void*)pFogParams->type);
         RwRenderStateSet(rwRENDERSTATEFOGCOLOR, (void*)bite_me);
         RwRenderStateSet(rwRENDERSTATEFOGDENSITY, (void*)&pFogParams->density);
-
         RwCameraSetFogDistance(pCamera, pFogParams->start);
         RwCameraSetFarClipPlane(pCamera, pFogParams->stop);
     }
