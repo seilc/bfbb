@@ -49,7 +49,7 @@ struct xVec2
         return assign(xy, xy);
     }
     xVec2& assign(F32 x, F32 y);
-    F32 length() const;
+    F32 length() const { return xsqrt(length2()); }
     F32 length2() const;
     xVec2 normal() const
     {
@@ -70,7 +70,7 @@ struct xVec2
 
     xVec2& operator=(F32);
     xVec2 operator*(F32) const;
-    xVec2 operator/=(F32);
+    xVec2& operator/=(F32 f) { F32 i = 1.0f / f; x *= i; y *= i; return *this; }
     xVec2& operator+=(const xVec2&);
     xVec2& operator*=(F32);
     xVec2& operator-=(const xVec2&);
