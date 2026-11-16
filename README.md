@@ -35,11 +35,13 @@ It builds the following DOLs:
 
 - `GQPE78` main.dol: `sha1: 306526d90b48e99894c3138f5fc8f2716d9fecf6`
 - `GQPP78` main.dol: `sha1: 6da9022f06bfb62a203017ec38046ba2566dc0cf`
+- `GQPE78_20031001` main.dol: `sha1: 459e2ee9a426a54e71986a27cf141c4ac4a3841a`
 
 Supported versions:
 
 - `GQPE78` - Battle for Bikini Bottom (USA), retail `main.dol`
 - `GQPP78` - Battle for Bikini Bottom (Europe), retail `main.dol`
+- `GQPE78_20031001` - Battle for Bikini Bottom (USA), Oct 1 2003 prototype `main.dol`
 
 The game code builds with `GC/2.0p3`, our model of the CodeWarrior version it needs (not in decomp.dev's compiler
 set), built from [our fork](https://github.com/seilc/mweppc) of the [doldecomp/mweppc](https://github.com/doldecomp/mweppc)
@@ -92,7 +94,8 @@ sudo xattr -rd com.apple.quarantine '/Applications/Wine Crossover.app'
   git clone https://github.com/seilc/bfbb.git
   ```
 
-- Using [Dolphin Emulator](https://dolphin-emu.org/), extract your game to `orig/GQPE78` (`orig/GQPP78` for Europe).
+- Using [Dolphin Emulator](https://dolphin-emu.org/), extract your game to `orig/GQPE78` (`orig/GQPP78` for Europe,
+  `orig/GQPE78_20031001` for the Oct 1 2003 prototype).
   ![](assets/dolphin-extract.png)
   - To save space, the only necessary files are the following. Any others can be deleted.
     - `sys/main.dol`
