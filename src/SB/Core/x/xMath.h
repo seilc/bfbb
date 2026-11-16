@@ -13,22 +13,22 @@
 #define xabs(x) iabs(x)
 
 #define xeq(a, b, e) (xabs((a) - (b)) <= (e))
-#define xfeq0(x) (((x) >= -1e-5f) && ((x) <= 1e-5f))
+#define xfeq0(x) (((x) >= -EPSILON) && ((x) <= EPSILON))
 
 #define CLAMP(x, a, b) (MAX((a), MIN((x), (b))))
 #define xlerp(a, b, t) ((a) + (t) * ((b) - (a)))
 
 #define SQR(x) ((x) * (x))
 #define xsqr(x) ((x) * (x))
+#define xsignbit(x) ((x) < 0.0f ? 1 : 0)
+#define xsamesign(a,b) (xsignbit(a) == xsignbit(b))
+#define xSIGNMATCH(a, b)                        \
+    if ((b) < 0.0f) {                           \
+        if ((a) > 0.0f) (a) = -(a);             \
+    } else if ((a) < 0.0f) (a) = -(a)
 
 #define ALIGN(x, a) ((x) + ((a) - 1) & ~((a) - 1))
 
-// Override these to point to their corresponding symbols in .sdata2
-// For example:
-//     #undef PI
-//     #undef ONEEIGHTY
-//     #define PI _771_1
-//     #define ONEEIGHTY _778_0
 #define PI 3.1415927f
 #define ONEEIGHTY 180.0f
 

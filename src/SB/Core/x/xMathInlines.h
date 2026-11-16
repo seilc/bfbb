@@ -45,6 +45,8 @@ inline F32 xpow(F32 x, F32 y)
     return std::powf(x, y);
 }
 
+inline void xmax3fast(F32& o, F32 a, F32 b, F32 c); // UNUSED
+
 F32 SQ(F32 x);
 
 void xsqrtfast(F32& out, F32 x);
