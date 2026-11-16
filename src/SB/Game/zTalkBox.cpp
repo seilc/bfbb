@@ -994,9 +994,9 @@ namespace
     }
     static bool layout_contains_streams()
     {
-        tag_type* sound_tag = (tag_type*)xtextbox::find_format_tag(substr::create("sound", 5));
-        jot* jots = (jot*)((xtextbox::layout*)&shared.lt)->jots();
-        jot* end = jots + ((xtextbox::layout*)&shared.lt)->jots_size();
+        xtextbox::tag_type* sound_tag = xtextbox::find_format_tag(substr::create("sound", 5));
+        xtextbox::jot* jots = shared.lt.jots();
+        xtextbox::jot* end = jots + shared.lt.jots_size();
 
         for (; jots != end; jots++)
         {
@@ -1331,7 +1331,7 @@ void ztalkbox::set_text(const char* s)
         shared.state = NULL;
     }
 
-    ((xtextbox::layout*)&shared.lt)->refresh(d.tb, false);
+    shared.lt.refresh(d.tb, false);
 
     if (layout_contains_streams())
     {
@@ -1370,7 +1370,7 @@ void ztalkbox::add_text(const char* text)
 
     if (shared.active == this)
     {
-        ((xtextbox::layout*)&shared.lt)->refresh_end(dialog_box->tb);
+        shared.lt.refresh_end(dialog_box->tb);
     }
 }
 void ztalkbox::add_text(U32 textID)
@@ -1436,7 +1436,7 @@ void ztalkbox::start_talk(const char* s, callback* cb, zNPCCommon* npc)
 
     d.refresh();
 
-    ((xtextbox::layout*)&shared.lt)->refresh(d.tb, false);
+    shared.lt.refresh(d.tb, false);
 
     if (layout_contains_streams())
     {
@@ -1735,7 +1735,7 @@ void ztalkbox::render_all()
         d.render_backdrop();
     }
 
-    d.tb.render(*(xtextbox::layout*)&shared.lt, shared.begin_jot, shared.end_jot);
+    d.tb.render(shared.lt, shared.begin_jot, shared.end_jot);
 }
 void ztalkbox::reset_all()
 {
@@ -1752,7 +1752,7 @@ void ztalkbox::reset_all()
     shared.next_stream = 0;
     shared.stream_locked[1] = 0;
     shared.stream_locked[0] = 0;
-    ((xtextbox::layout*)&shared.lt)->clear();
+    shared.lt.clear();
 }
 
 ztalkbox* ztalkbox::get_active()
@@ -1798,12 +1798,12 @@ namespace
         if (shared.end_jot == shared.page_end_jot)
         {
             xtextbox& tb = shared.active->dialog_box->tb;
-            S32 jots_size = ((xtextbox::layout*)&shared.lt)->jots_size();
-            ((xtextbox::layout*)&shared.lt)->jots();
+            S32 jots_size = shared.lt.jots_size();
+            shared.lt.jots();
 
             shared.begin_jot = shared.end_jot;
             S32 size;
-            tb.yextent(tb.bounds.h, size, *(xtextbox::layout*)&shared.lt, shared.begin_jot, -1);
+            tb.yextent(tb.bounds.h, size, shared.lt, shared.begin_jot, -1);
 
             if ((size == 0) && (jots_size > shared.begin_jot))
             {
@@ -1823,7 +1823,7 @@ namespace
 
         if (shared.end_jot == shared.page_end_jot)
         {
-            xtextbox::jot* jots = ((xtextbox::layout*)&shared.lt)->jots();
+            xtextbox::jot* jots = shared.lt.jots();
             xtextbox::jot* last = &jots[shared.end_jot] - 1;
 
             if ((last->flag.page_break) && ((S32)(shared.end_jot - 1) > shared.begin_jot))
@@ -1839,7 +1839,7 @@ namespace
     }
     static bool trigger_jot(S32 index)
     {
-        xtextbox::jot* jots = ((xtextbox::layout*)&shared.lt)->jots();
+        xtextbox::jot* jots = shared.lt.jots();
         return trigger_jot(jots[index]);
     }
     static bool trigger_jot(const xtextbox::jot& j)

@@ -75,7 +75,7 @@ void xParEmitterInit(xBase* b, xParEmitterAsset* pea)
     xParEmitter* bEmitter = (xParEmitter*)b;
 
     xBaseInit(bEmitter, (xBaseAsset*)pea);
-    bEmitter->eventFunc = (xBaseEventCB)xParEmitterEventCB;
+    bEmitter->eventFunc = xParEmitterEventCB;
     bEmitter->tasset = pea;
     bEmitter->prop = (xParEmitterPropsAsset*)xSTFindAsset(pea->propID, NULL);
     if (bEmitter->prop == NULL)
@@ -200,7 +200,7 @@ void xParEmitterReset(xParEmitter* t)
     t->emit_flags = t->tasset->emit_flags;
 }
 
-S32 xParEmitterEventCB(xBase* to, xBase* from, U32 toEvent, F32* toParam, xBase* toParamWidget)
+S32 xParEmitterEventCB(xBase* to, xBase* from, U32 toEvent, const F32* toParam, xBase* toParamWidget)
 {
     xParEmitterCustomSettings sp8;
 

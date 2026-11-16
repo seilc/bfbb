@@ -109,7 +109,7 @@ struct ztalkbox : xBase
     static void permit(U32 add_flags, U32 remove_flags);
     static ztalkbox* get_active();
 
-    void start_talk(U32 textID, callback*, zNPCCommon*); // FIXME: params not verified
+    void start_talk(U32 textID, callback*, zNPCCommon*);
     void start_talk(const char* text, callback* cb, zNPCCommon* npc);
 
     void MasterTellSlaves(int event);
@@ -200,89 +200,6 @@ namespace
         virtual void stop();
         virtual state_enum update(xScene& scn, F32 dt);
     };
-    struct jot;
-    struct callback
-    {
-        void (*render)(jot&, xtextbox&, F32, F32);
-        void (*layout_update)(jot&, xtextbox&, xtextbox&);
-        void (*render_update)(jot&, xtextbox&, xtextbox&);
-    };
-
-    struct split_tag
-    {
-        substr tag;
-        substr name;
-        substr action;
-        substr value;
-    };
-
-    struct tag_type
-    {
-        substr name;
-        void (*parse_tag)(jot&, xtextbox&, xtextbox&, split_tag&);
-        void (*reset_tag)(jot&, xtextbox&, xtextbox&, split_tag&);
-        void* context;
-    };
-
-    struct jot
-    {
-        substr s;
-
-        struct
-        {
-            // Offset: 0x8
-            bool invisible : 1; // bit 24
-            bool ethereal : 1; // bit 25
-            bool merge : 1; // bit 26
-            bool word_break : 1; // bit 27
-            bool word_end : 1; // bit 28
-            bool line_break : 1; // bit 29
-            bool stop : 1; // bit 30
-            bool tab : 1; // bit 31
-
-            // Offset: 0x9
-            bool insert : 1; // bit 24
-            bool dynamic : 1; // bit 25
-            bool page_break : 1; // bit 26
-            bool stateful : 1; // bit 27
-            U16 dummy : 4; // bits 28-31
-        } flag;
-        // Offset: 0xC
-        U16 context_size;
-
-        // Offset: 0x10
-        void* context;
-        basic_rect<F32> bounds;
-        basic_rect<F32> render_bounds;
-        callback* cb;
-        tag_type* tag;
-
-        void intersect_flags(const jot& other);
-        void reset_flags();
-    };
-
-    struct jot_line
-    {
-        basic_rect<F32> bounds;
-        F32 baseline;
-        U32 first;
-        U32 last;
-        U8 page_break;
-    };
-
-    struct layout
-    {
-        xtextbox tb;
-        jot _jots[512]; // 0x68
-        U32 _jots_size; // 0x7068
-        jot_line _lines[128]; // 0x706C
-        U32 _lines_size; // 0x806C
-        U8 context_buffer[1024]; // 0x8070
-        U32 context_buffer_size; // 0x8470
-        U16 dynamics[64]; // 0x8474
-        U32 dynamics_size; // 0x84F4
-        //refresh(d.tb, false)
-    };
 
     struct wait_context
     {
@@ -315,7 +232,7 @@ namespace
         ztalkbox* active; // 0x8
         state_type* state; // 0xC
         state_type* states[5]; // 0x10, size 0x14
-        layout lt; // 0x24
+        xtextbox::layout lt;
         S32 begin_jot; // 0x851C
         S32 end_jot; // 0x8520
         S32 page_end_jot; // 0x8524

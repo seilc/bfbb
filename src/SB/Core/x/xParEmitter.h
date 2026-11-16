@@ -133,7 +133,7 @@ void xParEmitterInit(void* b, void* tasset);
 void xParEmitterInit(xBase* b, xParEmitterAsset* pea);
 void xParEmitterSetup(xParEmitter* t);
 void xParEmitterReset(xParEmitter* t);
-S32 xParEmitterEventCB(xBase* to, xBase* from, U32 toEvent, F32* toParam, xBase* toParamWidget);
+S32 xParEmitterEventCB(xBase* to, xBase* from, U32 toEvent, const F32* toParam, xBase* toParamWidget);
 xPar* xParEmitterEmitCustom(xParEmitter* p, F32 dt, xParEmitterCustomSettings* info);
 U32 xParEmitterCull(xParEmitter* t, xPar* p);
 F32 xParInterpCompute(S32 interp_mode, xParInterp* r, F32 time, S32 time_has_elapsed, F32 lastVal);
