@@ -1,9 +1,11 @@
 SpongeBob SquarePants: Battle for Bikini Bottom (GameCube)  
-[![Build Status]][actions] <!--[![Code Progress]][progress] [![Data Progress]][progress]--> [![Discord Badge]][discord]
+[![Build Status]][actions] [![GQPE78 Progress]][treemap] <!--[![Code Progress]][progress] [![Data Progress]][progress]--> [![Discord Badge]][discord]
 =============
 
 [Build Status]: https://github.com/seilc/bfbb/actions/workflows/build.yml/badge.svg
 [actions]: https://github.com/seilc/bfbb/actions/workflows/build.yml
+[GQPE78 Progress]: https://img.shields.io/endpoint?url=https%3A%2F%2Fseilc.github.io%2Fbfbb%2FGQPE78.json
+[treemap]: https://seilc.github.io/bfbb/treemap.png
 <!--
 decomp.dev progress badges (hidden until the project is registered on decomp.dev)
 See https://decomp.dev/api for an API overview.
@@ -23,6 +25,8 @@ A work-in-progress matching decompilation of *SpongeBob SquarePants: Battle for 
 Based on the community decompilation [bfbbdecomp/bfbb](https://github.com/bfbbdecomp/bfbb) at
 [`d8e8eac3`](https://github.com/bfbbdecomp/bfbb/commit/d8e8eac3), whose history this repository keeps. Upstream
 changes after that commit are not merged.
+
+![Progress treemap][treemap]
 
 This repository does **not** contain any game assets or assembly whatsoever. An existing copy of the game is required.
 
